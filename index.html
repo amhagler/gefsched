@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Schedule</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ececec; /* Light grey background */
+            color: #2D68C4; /* UCLA blue */
+            padding: 20px;
+            margin: 0;
+        }
+        h1, h2 {
+            color: #2D68C4; /* UCLA blue */
+        }
+        form div {
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            padding: 10px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            page-break-inside: avoid;
+        }
+        th, td {
+            border: 1px solid #2D68C4; /* UCLA blue */
+            padding: 4px; /* Adjust padding to fit on an 8.5" x 11" page */
+            text-align: center;
+            font-size: 8px; /* Adjust font size to fit on an 8.5" x 11" page */
+        }
+        th {
+            color: white;
+        }
+        #blue-week-schedule th {
+            background-color: #2D68C4; /* UCLA blue */
+        }
+        #gold-week-schedule th {
+            background-color: #F2A900; /* UCLA gold */
+        }
+        td.on {
+            background-color: #ADD8E6; /* Light blue for class blocks */
+            color: #2D68C4; /* UCLA blue */
+        }
+        td.off {
+            background-color: white; /* White for empty blocks */
+            color: #2D68C4; /* UCLA blue */
+        }
+        td.lunch, td.x1 {
+            background-color: #A2AAAD; /* Silver for lunch blocks */
+            color: #2D68C4; /* UCLA blue */
+        }
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkbox-container div {
+            flex: 1 0 21%; /* Adjust to fit 5 items per row */
+            margin: 5px;
+        }
+        .checkbox-container input {
+            width: 20px;
+            height: 20px;
+        }
+        #schedule-container {
+            width: 670px; /* Adjust to fit the 8.5" x 11" page with margins */
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="schedule-container">
+        <h1>School Schedule</h1>
+        <form id="schedule-form">
+            <h2>Enter Class Names for Each Block</h2>
+            <div>
+                <label for="A">A Block:</label>
+                <input type="text" id="A" name="A">
+            </div>
+            <div>
+                <label for="B">B Block:</label>
+                <input type="text" id="B" name="B">
+            </div>
+            <div>
+                <label for="C">C Block:</label>
+                <input type="text" id="C" name="C">
+            </div>
+            <div>
+                <label for="D">D Block:</label>
+                <input type="text" id="D" name="D">
+            </div>
+            <div>
+                <label for="E">E Block:</label>
+                <input type="text" id="E" name="E">
+            </div>
+            <div>
+                <label for="F">F Block:</label>
+                <input type="text" id="F" name="F">
+            </div>
+            <div>
+                <label for="G">G Block:</label>
+                <input type="text" id="G" name="G">
+            </div>
+            <div>
+                <label for="H">H Block:</label>
+                <input type="text" id="H" name="H">
+            </div>
+            <div>
+                <label>H Block Office Hours:</label>
+                <div class="checkbox-container">
+                    <div><input type="checkbox" id="blue-monday" name="office-hours" value="blue-monday"> <label for="blue-monday">Blue Monday</label></div>
+                    <div><input type="checkbox" id="blue-tuesday" name="office-hours" value="blue-tuesday"> <label for="blue-tuesday">Blue Tuesday</label></div>
+                    <div><input type="checkbox" id="blue-wednesday" name="office-hours" value="blue-wednesday"> <label for="blue-wednesday">Blue Wednesday</label></div>
+                    <div><input type="checkbox" id="blue-thursday" name="office-hours" value="blue-thursday"> <label for="blue-thursday">Blue Thursday</label></div>
+                    <div><input type="checkbox" id="blue-friday" name="office-hours" value="blue-friday"> <label for="blue-friday">Blue Friday</label></div>
+                    <div><input type="checkbox" id="gold-monday" name="office-hours" value="gold-monday"> <label for="gold-monday">Gold Monday</label></div>
+                    <div><input type="checkbox" id="gold-tuesday" name="office-hours" value="gold-tuesday"> <label for="gold-tuesday">Gold Tuesday</label></div>
+                    <div><input type="checkbox" id="gold-wednesday" name="office-hours" value="gold-wednesday"> <label for="gold-wednesday">Gold Wednesday</label></div>
+                    <div><input type="checkbox" id="gold-thursday" name="office-hours" value="gold-thursday"> <label for="gold-thursday">Gold Thursday</label></div>
+                    <div><input type="checkbox" id="gold-friday" name="office-hours" value="gold-friday"> <label for="gold-friday">Gold Friday</label></div>
+                </div>
+            </div>
+            <button type="button" onclick="generateSchedule()">Generate Schedule</button>
+            <button type="button" onclick="copyToClipboard()">Copy</button>
+        </form>
+
+        <h2>Blue Week Schedule</h2>
+        <div id="blue-week-schedule-container">
+            <table id="blue-week-schedule">
+                <thead>
+                    <tr>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Gold Week Schedule</h2>
+        <div id="gold-week-schedule-container">
+            <table id="gold-week-schedule">
+                <thead>
+                    <tr>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const blueWeek = {
+            "monday": [
+                { "time": "9:00-9:15", "block": "Reading Period" },
+                { "time": "9:15-10:10", "block": "A" },
+                { "time": "10:15-11:10", "block": "B" },
+                { "time": "11:20-12:15", "block": "C" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "D" },
+                { "time": "2:10-3:05", "block": "E" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "tuesday": [
+                { "time": "9:00-9:20", "block": "Bulletin" },
+                { "time": "9:20-10:15", "block": "F" },
+                { "time": "10:20-11:15", "block": "G" },
+                { "time": "11:20-12:15", "block": "A" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "B" },
+                { "time": "2:10-3:05", "block": "C" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "wednesday": [
+                { "time": "9:00-9:15", "block": "Reading Period" },
+                { "time": "9:15-10:10", "block": "D" },
+                { "time": "10:15-11:10", "block": "E" },
+                { "time": "11:20-12:15", "block": "F" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "G" },
+                { "time": "2:10-3:05", "block": "A" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "thursday": [
+                { "time": "9:00-9:15", "block": "Reading Period" },
+                { "time": "9:15-10:10", "block": "B" },
+                { "time": "10:15-11:10", "block": "C" },
+                { "time": "11:20-12:15", "block": "D" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "E" },
+                { "time": "2:10-3:05", "block": "F" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "friday": [
+                { "time": "8:00-8:50", "block": "Educators’ Mtg." },
+                { "time": "9:00-9:55", "block": "G" },
+                { "time": "10:00-10:55", "block": "A" },
+                { "time": "11:05-12:00", "block": "B" },
+                { "time": "12:00-1:05", "block": "MS/US SuperLunch +Affinity Groups" },
+                { "time": "1:10-2:05", "block": "C" },
+                { "time": "2:10-3:05", "block": "D" },
+                { "time": "3:10-3:50", "block": "H/X1" }
+            ]
+        };
+
+        const goldWeek = {
+            "monday": [
+                { "time": "9:00-9:15", "block": "Reading Period" },
+                { "time": "9:15-10:10", "block": "E" },
+                { "time": "10:15-11:10", "block": "F" },
+                { "time": "11:20-12:15", "block": "G" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "A" },
+                { "time": "2:10-3:05", "block": "B" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "tuesday": [
+                { "time": "9:00-9:20", "block": "Bulletin" },
+                { "time": "9:20-10:15", "block": "C" },
+                { "time": "10:20-11:15", "block": "D" },
+                { "time": "11:20-12:15", "block": "E" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "F" },
+                { "time": "2:10-3:05", "block": "G" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "wednesday": [
+                { "time": "9:00-9:15", "block": "Reading Period" },
+                { "time": "9:15-10:10", "block": "A" },
+                { "time": "10:15-11:10", "block": "B" },
+                { "time": "11:20-12:15", "block": "C" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "D" },
+                { "time": "2:10-3:05", "block": "E" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "thursday": [
+                { "time": "9:00-9:15", "block": "Reading Period" },
+                { "time": "9:15-10:10", "block": "F" },
+                { "time": "10:15-11:10", "block": "G" },
+                { "time": "11:20-12:15", "block": "A" },
+                { "time": "12:15-1:05", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "1:10-2:05", "block": "B" },
+                { "time": "2:10-3:05", "block": "C" },
+                { "time": "3:10-3:50", "block": "H" }
+            ],
+            "friday": [
+                { "time": "8:00-8:50", "block": "Educators’ Mtg." },
+                { "time": "9:00-9:55", "block": "D" },
+                { "time": "10:00-10:40", "block": "H" },
+                { "time": "10:50-11:45", "block": "E" },
+                { "time": "11:45-12:35", "block": "MS/US Lunch +MS/US Clubs" },
+                { "time": "12:40-1:35", "block": "F" },
+                { "time": "1:40-2:35", "block": "G" },
+                { "time": "2:40-3:20", "block": "X3" }
+            ]
+        };
+
+        function generateSchedule() {
+            const classSchedule = {
+                "A": document.getElementById('A').value,
+                "B": document.getElementById('B').value,
+                "C": document.getElementById('C').value,
+                "D": document.getElementById('D').value,
+                "E": document.getElementById('E').value,
+                "F": document.getElementById('F').value,
+                "G": document.getElementById('G').value,
+                "H": document.getElementById('H').value
+            };
+
+            const officeHours = Array.from(document.querySelectorAll('input[name="office-hours"]:checked')).map(checkbox => checkbox.value);
+
+            const weekDays = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+            const blueWeekTable = document.getElementById("blue-week-schedule").getElementsByTagName('tbody')[0];
+            const goldWeekTable = document.getElementById("gold-week-schedule").getElementsByTagName('tbody')[0];
+
+            blueWeekTable.innerHTML = ''; // Clear the table
+            goldWeekTable.innerHTML = ''; // Clear the table
+
+            // Generate schedule for Blue Week
+            let maxRows = Math.max(...weekDays.map(day => blueWeek[day].length));
+            for (let i = 0; i < maxRows; i++) {
+                let row = blueWeekTable.insertRow();
+                weekDays.forEach(day => {
+                    let cell = row.insertCell();
+                    let period = blueWeek[day][i];
+                    if (period) {
+                        if (classSchedule[period.block]) {
+                            cell.innerHTML = `${classSchedule[period.block]} (${period.block})<br><small>${period.time}</small>`;
+                            cell.className = "on";
+                        } else if (officeHours.includes(`blue-${day}`) && period.block === "H") {
+                            cell.innerHTML = `Office Hours (H)<br><small>${period.time}</small>`;
+                            cell.className = "on";
+                        } else {
+                            cell.innerHTML = `${period.block}<br><small>${period.time}</small>`;
+                            cell.className = "off";
+                        }
+                        if (period.block === "MS/US Lunch +MS/US Clubs" || period.block === "MS/US SuperLunch +Affinity Groups" || period.block === "H" || period.block === "H/X1" || period.block === "X3") {
+                            cell.className = "lunch";
+                        }
+                    } else {
+                        cell.className = "off"; // Default to off if no period exists
+                    }
+                });
+            }
+
+            // Generate schedule for Gold Week
+            maxRows = Math.max(...weekDays.map(day => goldWeek[day].length));
+            for (let i = 0; i < maxRows; i++) {
+                let row = goldWeekTable.insertRow();
+                weekDays.forEach(day => {
+                    let cell = row.insertCell();
+                    let period = goldWeek[day][i];
+                    if (period) {
+                        if (classSchedule[period.block]) {
+                            cell.innerHTML = `${classSchedule[period.block]} (${period.block})<br><small>${period.time}</small>`;
+                            cell.className = "on";
+                        } else if (officeHours.includes(`gold-${day}`) && period.block === "H") {
+                            cell.innerHTML = `Office Hours (H)<br><small>${period.time}</small>`;
+                            cell.className = "on";
+                        } else {
+                            cell.innerHTML = `${period.block}<br><small>${period.time}</small>`;
+                            cell.className = "off";
+                        }
+                        if (period.block === "MS/US Lunch +MS/US Clubs" || period.block === "MS/US SuperLunch +Affinity Groups" || period.block === "H" || period.block === "H/X1" || period.block === "X3") {
+                            cell.className = "lunch";
+                        }
+                    } else {
+                        cell.className = "off"; // Default to off if no period exists
+                    }
+                });
+            }
+        }
+
+        function copyToClipboard() {
+            const schedules = document.createElement('div');
+            schedules.appendChild(document.getElementById('blue-week-schedule-container').cloneNode(true));
+            schedules.appendChild(document.getElementById('gold-week-schedule-container').cloneNode(true));
+
+            const range = document.createRange();
+            const selection = window.getSelection();
+
+            document.body.appendChild(schedules);
+            range.selectNodeContents(schedules);
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                document.execCommand('copy');
+                alert('Schedules copied to clipboard');
+            } catch (err) {
+                alert('Failed to copy schedules');
+            } finally {
+                document.body.removeChild(schedules);
+            }
+        }
+    </script>
+</body>
+</html>
