@@ -37,7 +37,7 @@
             border: 1px solid #2D68C4; /* UCLA blue */
             padding: 4px; /* Adjust padding to fit on an 8.5" x 11" page */
             text-align: center;
-            font-size: 8px; /* Adjust font size to fit on an 8.5" x 11" page */
+            font-size: 10px; /* Adjust font size to fit on an 8.5" x 11" page */
         }
         th {
             color: white;
@@ -50,6 +50,10 @@
         }
         td.on {
             background-color: #ADD8E6; /* Light blue for class blocks */
+            color: #2D68C4; /* UCLA blue */
+        }
+        td.office-hours {
+            background-color: #ADD8E6; /* Light blue for office hours */
             color: #2D68C4; /* UCLA blue */
         }
         td.off {
@@ -65,7 +69,7 @@
             flex-wrap: wrap;
         }
         .checkbox-container div {
-            flex: 1 0 21%; /* Adjust to fit 5 items per row */
+            flex: 1 0 48%; /* Adjust to fit two columns */
             margin: 5px;
         }
         .checkbox-container input {
@@ -119,14 +123,14 @@
                 <label>H Block Office Hours:</label>
                 <div class="checkbox-container">
                     <div><input type="checkbox" id="blue-monday" name="office-hours" value="blue-monday"> <label for="blue-monday">Blue Monday</label></div>
-                    <div><input type="checkbox" id="blue-tuesday" name="office-hours" value="blue-tuesday"> <label for="blue-tuesday">Blue Tuesday</label></div>
-                    <div><input type="checkbox" id="blue-wednesday" name="office-hours" value="blue-wednesday"> <label for="blue-wednesday">Blue Wednesday</label></div>
-                    <div><input type="checkbox" id="blue-thursday" name="office-hours" value="blue-thursday"> <label for="blue-thursday">Blue Thursday</label></div>
-                    <div><input type="checkbox" id="blue-friday" name="office-hours" value="blue-friday"> <label for="blue-friday">Blue Friday</label></div>
                     <div><input type="checkbox" id="gold-monday" name="office-hours" value="gold-monday"> <label for="gold-monday">Gold Monday</label></div>
+                    <div><input type="checkbox" id="blue-tuesday" name="office-hours" value="blue-tuesday"> <label for="blue-tuesday">Blue Tuesday</label></div>
                     <div><input type="checkbox" id="gold-tuesday" name="office-hours" value="gold-tuesday"> <label for="gold-tuesday">Gold Tuesday</label></div>
+                    <div><input type="checkbox" id="blue-wednesday" name="office-hours" value="blue-wednesday"> <label for="blue-wednesday">Blue Wednesday</label></div>
                     <div><input type="checkbox" id="gold-wednesday" name="office-hours" value="gold-wednesday"> <label for="gold-wednesday">Gold Wednesday</label></div>
+                    <div><input type="checkbox" id="blue-thursday" name="office-hours" value="blue-thursday"> <label for="blue-thursday">Blue Thursday</label></div>
                     <div><input type="checkbox" id="gold-thursday" name="office-hours" value="gold-thursday"> <label for="gold-thursday">Gold Thursday</label></div>
+                    <div><input type="checkbox" id="blue-friday" name="office-hours" value="blue-friday"> <label for="blue-friday">Blue Friday</label></div>
                     <div><input type="checkbox" id="gold-friday" name="office-hours" value="gold-friday"> <label for="gold-friday">Gold Friday</label></div>
                 </div>
             </div>
@@ -309,13 +313,13 @@
                             cell.innerHTML = `${classSchedule[period.block]} (${period.block})<br><small>${period.time}</small>`;
                             cell.className = "on";
                         } else if (officeHours.includes(`blue-${day}`) && period.block === "H") {
-                            cell.innerHTML = `Office Hours (H)<br><small>${period.time}</small>`;
-                            cell.className = "on";
+                            cell.innerHTML = `Office Hours<br><small>${period.time}</small>`;
+                            cell.className = "office-hours"; // Correct class for office hours
                         } else {
                             cell.innerHTML = `${period.block}<br><small>${period.time}</small>`;
                             cell.className = "off";
                         }
-                        if (period.block === "MS/US Lunch +MS/US Clubs" || period.block === "MS/US SuperLunch +Affinity Groups" || period.block === "H" || period.block === "H/X1" || period.block === "X3") {
+                        if (period.block === "MS/US Lunch +MS/US Clubs" || period.block === "MS/US SuperLunch +Affinity Groups" || period.block === "H/X1" || period.block === "X3") {
                             cell.className = "lunch";
                         }
                     } else {
@@ -336,13 +340,13 @@
                             cell.innerHTML = `${classSchedule[period.block]} (${period.block})<br><small>${period.time}</small>`;
                             cell.className = "on";
                         } else if (officeHours.includes(`gold-${day}`) && period.block === "H") {
-                            cell.innerHTML = `Office Hours (H)<br><small>${period.time}</small>`;
-                            cell.className = "on";
+                            cell.innerHTML = `Office Hours<br><small>${period.time}</small>`;
+                            cell.className = "office-hours"; // Correct class for office hours
                         } else {
                             cell.innerHTML = `${period.block}<br><small>${period.time}</small>`;
                             cell.className = "off";
                         }
-                        if (period.block === "MS/US Lunch +MS/US Clubs" || period.block === "MS/US SuperLunch +Affinity Groups" || period.block === "H" || period.block === "H/X1" || period.block === "X3") {
+                        if (period.block === "MS/US Lunch +MS/US Clubs" || period.block === "MS/US SuperLunch +Affinity Groups" || period.block === "H/X1" || period.block === "X3") {
                             cell.className = "lunch";
                         }
                     } else {
