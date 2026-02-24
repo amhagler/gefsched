@@ -1,67 +1,38 @@
-/************************************************************
- * Global typing capture:
- * - "/" focuses Google search
- * - Typing anywhere else (not in a text field) routes into "Add an agenda item"
- ************************************************************/
-window.addEventListener("keydown", (e) => {
-  // If something else already handled it, don't interfere
-  if (e.defaultPrevented) return;
+function addChecklistItem(rawText){
+  const t = (rawText || "").trim();
+  if (!t) return;
 
-  const active = document.activeElement;
-  const tag = (active && active.tagName) ? active.tagName.toLowerCase() : "";
-  const isTypingField =
-    tag === "input" ||
-    tag === "textarea" ||
-    tag === "select" ||
-    (active && active.isContentEditable);
+  const parsed = parseTagsAndDue(t);
 
-  // If the export/import modal is open, let it behave normally
-  if (overlay && overlay.style.display === "flex") return;
+  const item = normalizeChecklistItem({
+    id: uid(),
+    text: parsed.text,
+    done: false,
+    createdAt: Date.now(),
+    completedAt: null,
+    dueAt: parsed.dueAt || null,
+    priority: false,
+    tags: parsed.tags || [],
+    order: 0
+  }, 0);
 
-  // Keep your existing "/" shortcut for Google search
-  if (e.key === "/" && active !== document.getElementById("googleQ")) {
-    // Only when NOT already in a typing field
-    if (!isTypingField) {
-      e.preventDefault();
-      document.getElementById("googleQ").focus();
-    }
-    return;
+  // With auto-sort, we just append; sorter will place it correctly.
+  item.order = item.createdAt;
+
+  state.checklist = [...state.checklist, item];
+  saveState();
+  newItemText.value = "";
+  renderChecklist();
+
+  // NEW: If no due was provided inline, prompt immediately.
+  if (!item.dueAt){
+    setTimeout(() => {
+      setDue(item.id);
+      // after prompt closes, get you ready for the next entry
+      setTimeout(() => newItemText.focus(), 0);
+    }, 0);
+  } else {
+    // already had a due token; keep flow fast
+    setTimeout(() => newItemText.focus(), 0);
   }
-
-  // If user is already typing in any input/textarea/select/contenteditable, do nothing
-  if (isTypingField) return;
-
-  // Ignore modifier combos (Cmd/Ctrl/Alt) and function keys
-  if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-  // Route "Backspace" into the agenda box too (prevents browser back-navigation)
-  if (e.key === "Backspace") {
-    e.preventDefault();
-    newItemText.focus();
-
-    // Delete one char at cursor (like a normal input would)
-    const s = newItemText.selectionStart ?? newItemText.value.length;
-    const t = newItemText.selectionEnd ?? newItemText.value.length;
-    if (s !== t) {
-      newItemText.value = newItemText.value.slice(0, s) + newItemText.value.slice(t);
-      newItemText.setSelectionRange(s, s);
-    } else if (s > 0) {
-      newItemText.value = newItemText.value.slice(0, s - 1) + newItemText.value.slice(s);
-      newItemText.setSelectionRange(s - 1, s - 1);
-    }
-    return;
-  }
-
-  // Printable characters: send into agenda input
-  // (Most printable keys have length 1; e.g., "a", "7", " " etc.)
-  if (typeof e.key === "string" && e.key.length === 1) {
-    e.preventDefault();
-    newItemText.focus();
-
-    // Insert at cursor (preserves editing in the middle of text)
-    const s = newItemText.selectionStart ?? newItemText.value.length;
-    const t = newItemText.selectionEnd ?? newItemText.value.length;
-    newItemText.value = newItemText.value.slice(0, s) + e.key + newItemText.value.slice(t);
-    newItemText.setSelectionRange(s + 1, s + 1);
-  }
-});
+}
