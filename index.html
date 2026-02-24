@@ -1582,6 +1582,391 @@
           <span>Checklist + schedule entry.</span>
         </div>
         <div class="pill"><span class="spark"></span><span id="dayModePill">—</span></div>
+        <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Week Tasks Calendar (Local)</title>
+  <style>
+    :root{
+      --bg0:#070B1A;
+      --panel:#0C1638;
+      --ink:#EAF0FF;
+      --muted:#B7C2E6;
+      --electric:#2D7DFF;
+      --warn:#FFE066;
+      --danger:#FF5A5A;
+      --radius:16px;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 50% 10%, #101B45 0%, var(--bg0) 55%, #050816 100%);
+      color:var(--ink);
+      padding:24px;
+    }
+    .wrap{ max-width: 980px; margin: 0 auto; }
+    .card{
+      background: linear-gradient(180deg, rgba(12,22,56,.92), rgba(9,16,41,.88));
+      border: 1px solid rgba(123,231,255,.12);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    header{
+      padding:16px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom: 1px solid rgba(123,231,255,.10);
+    }
+    header h1{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    header .range{
+      font-size: 13px;
+      color: var(--ink);
+      opacity:.9;
+    }
+
+    .addRow{
+      padding:14px 18px;
+      display:grid;
+      grid-template-columns: 1fr 180px 120px;
+      gap:10px;
+      border-bottom: 1px solid rgba(123,231,255,.08);
+    }
+    .addRow input, .addRow button{
+      border-radius: 12px;
+      border: 1px solid rgba(123,231,255,.14);
+      background: rgba(0,0,0,.18);
+      color: var(--ink);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .addRow input::placeholder{ color: rgba(234,240,255,.55); }
+    .addRow button{
+      cursor:pointer;
+      background: linear-gradient(180deg, rgba(45,125,255,.28), rgba(30,91,255,.18));
+      border-color: rgba(45,125,255,.35);
+      font-weight:600;
+    }
+    .addRow button:hover{ filter: brightness(1.08); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      padding: 14px 18px 18px;
+    }
+    .day{
+      min-height: 180px;
+      border-radius: 14px;
+      border: 1px solid rgba(123,231,255,.10);
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .dayHead{
+      padding:10px 10px 8px;
+      border-bottom: 1px solid rgba(123,231,255,.08);
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .dow{
+      font-weight:700;
+      font-size: 12px;
+      letter-spacing:.12em;
+      text-transform: uppercase;
+      color: rgba(123,231,255,.85);
+    }
+    .date{
+      font-size: 12px;
+      color: rgba(234,240,255,.75);
+    }
+    .pill{
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(123,231,255,.14);
+      color: rgba(234,240,255,.8);
+      background: rgba(0,0,0,.14);
+    }
+    .items{
+      padding: 8px 10px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .item{
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid rgba(123,231,255,.12);
+      background: rgba(0,0,0,.16);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .item .t{
+      font-size: 13px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+    .item .meta{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+    .item button{
+      border: 1px solid rgba(255,90,90,.35);
+      background: rgba(255,90,90,.12);
+      color: rgba(255,220,220,.92);
+      border-radius: 10px;
+      padding: 6px 8px;
+      cursor:pointer;
+      font-size: 12px;
+    }
+    .item button:hover{ filter: brightness(1.1); }
+
+    .note{
+      padding: 0 18px 16px;
+      color: rgba(234,240,255,.62);
+      font-size: 12px;
+    }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: repeat(2, 1fr); }
+      .addRow{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <h1>Week View</h1>
+        <div class="range" id="rangeLabel"></div>
+      </header>
+
+      <div class="addRow">
+        <input id="taskTitle" type="text" placeholder="Task (e.g., Grade B block outlines)" />
+        <input id="taskDue" type="date" />
+        <button id="addBtn">Add task</button>
+      </div>
+
+      <div class="grid" id="weekGrid"></div>
+
+      <div class="note">
+        Shows tasks due within the next 7 days (starting today). Data saves locally in your browser.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Utilities ----------
+    const pad2 = n => String(n).padStart(2,'0');
+
+    function toLocalYMD(d){
+      const yr = d.getFullYear();
+      const mo = pad2(d.getMonth()+1);
+      const da = pad2(d.getDate());
+      return `${yr}-${mo}-${da}`;
+    }
+
+    function fromYMD(ymd){
+      const [y,m,d] = ymd.split("-").map(Number);
+      return new Date(y, m-1, d, 12, 0, 0, 0); // noon avoids DST edge weirdness
+    }
+
+    function addDays(date, n){
+      const d = new Date(date.getTime());
+      d.setDate(d.getDate()+n);
+      return d;
+    }
+
+    function formatShort(date){
+      return date.toLocaleDateString(undefined, { month:"numeric", day:"numeric" });
+    }
+
+    function formatDow(date){
+      return date.toLocaleDateString(undefined, { weekday:"short" });
+    }
+
+    // ---------- Storage ----------
+    const STORAGE_KEY = "cockpit_tasks_v1";
+
+    function loadTasks(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+      }catch(e){
+        return [];
+      }
+    }
+
+    function saveTasks(tasks){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    // Task shape: { id, title, dueYMD, createdAt }
+    function createTask(title, dueYMD){
+      return {
+        id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2),
+        title: title.trim(),
+        dueYMD,
+        createdAt: Date.now()
+      };
+    }
+
+    // ---------- Rendering ----------
+    const weekGrid = document.getElementById("weekGrid");
+    const rangeLabel = document.getElementById("rangeLabel");
+
+    function render(){
+      const tasks = loadTasks();
+
+      const start = new Date();
+      start.setHours(12,0,0,0);
+
+      const days = Array.from({length:7}, (_,i)=> addDays(start, i));
+      const startYMD = toLocalYMD(days[0]);
+      const endYMD = toLocalYMD(days[6]);
+
+      rangeLabel.textContent = `${formatShort(days[0])} – ${formatShort(days[6])}`;
+
+      // index tasks by dueYMD (only within range)
+      const byDay = new Map();
+      for(const d of days) byDay.set(toLocalYMD(d), []);
+
+      for(const t of tasks){
+        if(byDay.has(t.dueYMD)){
+          byDay.get(t.dueYMD).push(t);
+        }
+      }
+
+      // sort tasks within each day (createdAt secondary)
+      for(const [k, arr] of byDay.entries()){
+        arr.sort((a,b)=>{
+          if(a.dueYMD !== b.dueYMD) return a.dueYMD.localeCompare(b.dueYMD);
+          return a.createdAt - b.createdAt;
+        });
+      }
+
+      // build DOM
+      weekGrid.innerHTML = "";
+      for(const d of days){
+        const ymd = toLocalYMD(d);
+        const list = byDay.get(ymd) || [];
+
+        const dayEl = document.createElement("div");
+        dayEl.className = "day";
+
+        const head = document.createElement("div");
+        head.className = "dayHead";
+        head.innerHTML = `
+          <div>
+            <div class="dow">${formatDow(d)}</div>
+            <div class="date">${formatShort(d)}</div>
+          </div>
+          <div class="pill">${list.length} due</div>
+        `;
+
+        const items = document.createElement("div");
+        items.className = "items";
+
+        if(list.length === 0){
+          const empty = document.createElement("div");
+          empty.style.opacity = ".55";
+          empty.style.fontSize = "12px";
+          empty.style.padding = "8px 2px";
+          empty.textContent = "No tasks due.";
+          items.appendChild(empty);
+        }else{
+          for(const t of list){
+            const it = document.createElement("div");
+            it.className = "item";
+
+            const title = document.createElement("div");
+            title.className = "t";
+            title.textContent = t.title;
+
+            const meta = document.createElement("div");
+            meta.className = "meta";
+
+            const del = document.createElement("button");
+            del.type = "button";
+            del.textContent = "Del";
+            del.title = "Delete task";
+            del.addEventListener("click", ()=>{
+              const next = loadTasks().filter(x => x.id !== t.id);
+              saveTasks(next);
+              render();
+            });
+
+            meta.appendChild(del);
+            it.appendChild(title);
+            it.appendChild(meta);
+            items.appendChild(it);
+          }
+        }
+
+        dayEl.appendChild(head);
+        dayEl.appendChild(items);
+        weekGrid.appendChild(dayEl);
+      }
+    }
+
+    // ---------- Add task ----------
+    const titleEl = document.getElementById("taskTitle");
+    const dueEl = document.getElementById("taskDue");
+    const addBtn = document.getElementById("addBtn");
+
+    function setDefaultDue(){
+      dueEl.value = toLocalYMD(new Date());
+    }
+
+    function addTask(){
+      const title = titleEl.value.trim();
+      const dueYMD = dueEl.value;
+
+      if(!title) return;
+      if(!dueYMD) return;
+
+      const tasks = loadTasks();
+      tasks.push(createTask(title, dueYMD));
+      // global sort by due date for sanity
+      tasks.sort((a,b)=> a.dueYMD.localeCompare(b.dueYMD) || (a.createdAt - b.createdAt));
+      saveTasks(tasks);
+
+      titleEl.value = "";
+      titleEl.focus();
+      render();
+    }
+
+    addBtn.addEventListener("click", addTask);
+    titleEl.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter") addTask();
+    });
+
+    // ---------- Boot ----------
+    setDefaultDue();
+    render();
+  </script>
+</body>
+</html>
       </div>
 
       <div class="cockBody">
