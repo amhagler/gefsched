@@ -27,2599 +27,1099 @@
 
       --gold:#FFE066;
       --red:#FF5A5A;
-      /* ADHD-friendly urgency colors */
-      --warnYellow: #FFE066;  /* 24h */
-      --warnOrange: #FF9A3D;  /* 1h */
-      --dangerRed:  #FF3B3B;  /* overdue */
-
-      /* Priority purple */
-      --priPurple:  #B66BFF;
-      --priPurple2: #7C3CFF;
-      --line: rgba(255,255,255,.10);
-      --line2: rgba(255,255,255,.18);
-
-      --radius: 18px;
-      --radius2: 26px;
+      --warn:#FFB55A;
 
       --shadow: 0 18px 60px rgba(0,0,0,.55);
       --shadow2: 0 10px 28px rgba(0,0,0,.35);
 
+      --radius: 18px;
+      --radius2: 26px;
+
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      --serif: ui-serif, Georgia, "Times New Roman", serif;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 
-      /* Ring sizing (circular nodes) */
-      --ringSize: 720px;
-      --nodeW: 132px;
-      --nodeH: 132px;
-      --ringPad: 40px;
+      --ringSize: 520px;      /* auto-updated by JS */
+      --centerBoxW: 270px;    /* center block */
+      --centerBoxH: 230px;
 
-      /* SMALLER center holo */
-      --holoInset: 210px;
+      --pillBg: rgba(234,240,255,.06);
+      --pillBd: rgba(123,231,255,.22);
+      --pillBd2: rgba(45,125,255,.35);
     }
 
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
       margin:0;
-      color:var(--ink);
-      font-family:var(--sans);
-      background:
-        radial-gradient(1200px 700px at 20% 0%, rgba(45,125,255,.16), transparent 55%),
-        radial-gradient(1100px 620px at 80% 18%, rgba(123,231,255,.10), transparent 60%),
-        radial-gradient(900px 520px at 60% 95%, rgba(215,181,109,.08), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
+      font-family: var(--sans);
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 20% 15%, rgba(45,125,255,.14), transparent 55%),
+                  radial-gradient(1000px 650px at 80% 30%, rgba(75,255,211,.10), transparent 55%),
+                  radial-gradient(900px 600px at 50% 85%, rgba(215,181,109,.08), transparent 55%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden;
     }
 
-    /* ===== Matrix/electric cascade background ===== */
-    #matrixBg{
-      position:fixed;
-      inset:0;
+    /* STARFIELD */
+    .fxLayer{
+      position:fixed; inset:0;
+      pointer-events:none;
       z-index:0;
-      pointer-events:none;
-      opacity:.55;
-      mix-blend-mode: screen;
-      filter: blur(.15px);
     }
-    .scanlines, .fog{
-      position:fixed;
-      inset:0;
-      pointer-events:none;
+    canvas.fx{ position:absolute; inset:0; width:100%; height:100%; opacity:.65; }
+    canvas.arcs{ mix-blend-mode: screen; opacity:.9; }
+
+    /* LAYOUT */
+    .wrap{
+      position:relative;
       z-index:1;
-    }
-    .scanlines{
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(255,255,255,.03),
-        rgba(255,255,255,.03) 1px,
-        transparent 1px,
-        transparent 3px
-      );
-      opacity:.14;
-      mix-blend-mode: overlay;
-    }
-    .fog{
-      background:
-        radial-gradient(1000px 600px at 25% 60%, rgba(123,231,255,.10), transparent 60%),
-        radial-gradient(900px 520px at 70% 45%, rgba(45,125,255,.08), transparent 60%),
-        radial-gradient(720px 420px at 52% 86%, rgba(75,255,211,.06), transparent 65%),
-        radial-gradient(700px 420px at 40% 92%, rgba(215,181,109,.06), transparent 70%);
-      filter: blur(12px);
-      opacity:.55;
-      animation: fogMove 16s ease-in-out infinite alternate;
-    }
-    @keyframes fogMove{
-      from{ transform: translate3d(-10px, 0, 0) scale(1.02); }
-      to{ transform: translate3d(14px, -9px, 0) scale(1.03); }
+      height:100%;
+      display:grid;
+      grid-template-columns: minmax(340px, 1.15fr) minmax(320px, 0.95fr);
+      gap:16px;
+      padding:16px;
     }
 
-    /* ===== Lightning overlay canvas ===== */
-    #fxLightning{
-      position:fixed;
-      inset:0;
-      z-index:10;
-      pointer-events:none;
+    .left, .right{
+      background: linear-gradient(180deg, rgba(12,22,56,.92), rgba(10,18,48,.88));
+      border: 1px solid rgba(123,231,255,.14);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
     }
 
-    /* Top bar */
+    .left{ display:flex; flex-direction:column; }
+    .right{ display:flex; flex-direction:column; }
+
     .topbar{
-      position:sticky;
-      top:0;
-      z-index:6;
-      padding: 14px 16px;
-      backdrop-filter: blur(10px);
-      background: linear-gradient(to bottom, rgba(7,11,26,.80), rgba(7,11,26,.42));
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    .topbarInner{
-      max-width: 1320px;
-      margin:0 auto;
       display:flex;
-      gap: 14px;
       align-items:center;
       justify-content:space-between;
-      flex-wrap:wrap;
-      position:relative;
-      z-index:2;
+      gap:12px;
+      padding:12px 14px;
+      border-bottom: 1px solid rgba(123,231,255,.12);
+      background: linear-gradient(180deg, rgba(7,11,26,.45), rgba(7,11,26,.12));
     }
 
     .brand{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width: 240px;
-    }
-    .brand .title{
-      font-family: var(--serif);
-      letter-spacing:.7px;
-      font-weight: 900;
-      font-size: 18px;
-      line-height:1.1;
-      color: var(--ink);
-      text-shadow: 0 0 18px rgba(45,125,255,.25);
-    }
-    .brand .subtitle{
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(234,240,255,.72);
-    }
-
-    .clockBox{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      font-family: var(--mono);
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: linear-gradient(180deg, rgba(12,22,56,.85), rgba(10,18,48,.75));
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: var(--shadow2);
-      min-width: 300px;
-      justify-content:center;
-      position:relative;
-      overflow:hidden;
-    }
-    .clockBox::before{
-      content:"";
-      position:absolute;
-      inset: -2px;
-      background:
-        radial-gradient(220px 70px at 20% 25%, rgba(215,181,109,.10), transparent 70%),
-        radial-gradient(240px 90px at 75% 65%, rgba(75,255,211,.07), transparent 70%);
-      pointer-events:none;
-      opacity:.9;
-    }
-    .clockTop{
-      display:flex;
-      gap:10px;
-      align-items:baseline;
-      justify-content:center;
-      position:relative;
-      z-index:2;
-    }
-    .clockBox .date{ color: rgba(234,240,255,.75); font-size: 12px; }
-    .clockBox .time{ color: var(--ink); font-size: 15px; font-weight: 900; }
-    .clockBox .ticks{ color: rgba(123,231,255,.85); font-size: 12px; }
-
-    @keyframes warnPulse{
-      0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset, 0 10px 22px rgba(0,0,0,.35); }
-      50% { box-shadow: 0 0 0 1px rgba(123,231,255,.22) inset, 0 0 18px rgba(45,125,255,.32), 0 10px 22px rgba(0,0,0,.35); }
-    }
-    .countdown{
-      display:flex;
-      justify-content:center;
-      gap:8px;
-      font-size: 11px;
-      color: rgba(234,240,255,.74);
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
-      position:relative;
-      overflow:hidden;
-      z-index:2;
-    }
-    .countdown b{ color: rgba(234,240,255,.92); }
-    .countdown.warn{
-      border-color: rgba(123,231,255,.22);
-      animation: warnPulse 1.6s ease-in-out infinite;
-    }
-
-    .searchWrap{
-      flex: 1;
-      min-width: 280px;
-      max-width: 580px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(12,22,56,.85), rgba(10,18,48,.70));
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: var(--shadow2);
-      position:relative;
-      overflow:hidden;
-    }
-    .searchWrap::before{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      background:
-        radial-gradient(300px 80px at 25% 10%, rgba(215,181,109,.09), transparent 70%),
-        radial-gradient(260px 90px at 70% 90%, rgba(75,255,211,.06), transparent 70%);
-      opacity:.9;
-      pointer-events:none;
-    }
-    .searchWrap .lens{
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      border: 2px solid rgba(123,231,255,.75);
-      position:relative;
-      opacity:.95;
-      flex: 0 0 auto;
-      z-index:2;
-    }
-    .searchWrap .lens:after{
-      content:"";
-      position:absolute;
-      width: 10px; height: 2px;
-      background: rgba(123,231,255,.75);
-      right:-8px; bottom:-3px;
-      transform: rotate(45deg);
-      border-radius: 3px;
-    }
-    .searchWrap input{
-      flex:1;
-      background: transparent;
-      border: none;
-      outline:none;
-      color: var(--ink);
-      font-family: var(--mono);
-      font-size: 13px;
-      position:relative;
-      z-index:2;
-    }
-    .searchWrap button{
-      border:none;
-      cursor:pointer;
-      color: #07101f;
-      font-weight: 900;
-      font-family: var(--mono);
-      font-size: 12px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(123,231,255,.95), rgba(45,125,255,.92));
-      box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset, 0 10px 22px rgba(0,0,0,.35);
-      transition: transform .08s ease, filter .18s ease;
-      flex: 0 0 auto;
-      position:relative;
-      z-index:2;
-    }
-    .searchWrap button:hover{ filter: brightness(1.05); }
-    .searchWrap button:active{ transform: translateY(1px); }
-
-    /* Main layout */
-    .shell{
-      position:relative;
-      z-index:3;
-      max-width: 1320px;
-      margin: 18px auto 40px auto;
-      padding: 0 16px;
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
-      align-items:start;
-    }
-    @media (max-width: 1040px){
-      .shell{ grid-template-columns: 1fr; }
-      :root{ --ringSize: 640px; --holoInset: 190px; --nodeW:124px; --nodeH:124px; }
-    }
-    @media (max-width: 680px){
-      :root{ --ringSize: 580px; --holoInset: 175px; --nodeW:116px; --nodeH:116px; }
-    }
-
-    /* Left: ring bay */
-    .bay{
-      position:relative;
-      border-radius: var(--radius2);
-      background: linear-gradient(180deg, rgba(12,22,56,.76), rgba(10,18,48,.62));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-      overflow: visible;
-      min-height: calc(var(--ringSize) + 120px);
-    }
-    .bay::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      border-radius: var(--radius2);
-      background:
-        radial-gradient(920px 420px at 25% 30%, rgba(45,125,255,.20), transparent 60%),
-        radial-gradient(720px 360px at 70% 60%, rgba(123,231,255,.14), transparent 55%),
-        radial-gradient(520px 320px at 50% 90%, rgba(215,181,109,.10), transparent 60%);
-      filter: blur(10px);
-      opacity:.95;
-      pointer-events:none;
-      z-index:0;
-    }
-    .bay .trim{
-      position:absolute;
-      inset:10px;
-      border-radius: calc(var(--radius2) - 6px);
-      border: 1px solid rgba(215,181,109,.20);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.22) inset;
-      pointer-events:none;
-      z-index:1;
-      opacity:.85;
-    }
-
-    .bayHeader{
-      position:relative;
-      z-index:4;
-      padding: 14px 14px 10px 14px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      background: linear-gradient(to bottom, rgba(255,255,255,.06), transparent);
-      border-radius: var(--radius2);
-    }
-    .bayHeader .h1{
-      display:flex;
-      flex-direction:column;
-      gap:3px;
-    }
-    .bayHeader .h1 b{
-      font-family: var(--mono);
-      letter-spacing:.14em;
-      text-transform: uppercase;
-      font-size: 12px;
-      color: rgba(234,240,255,.85);
-    }
-    .bayHeader .h1 span{
-      font-size: 12px;
-      color: rgba(234,240,255,.70);
-    }
-
-    .bayHeader .datePick{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:flex-end;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(234,240,255,.70);
-    }
-    .bayHeader .datePickRow{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    .bayHeader input[type="date"]{
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(7,11,26,.25);
-      color: var(--ink);
-      padding: 8px 10px;
-      font-family: var(--mono);
-      font-size: 12px;
-      outline:none;
-    }
-    .bayHeader input[type="date"]:focus{
-      border-color: rgba(123,231,255,.30);
-      box-shadow: 0 0 0 4px rgba(45,125,255,.18);
-    }
-
-    .ringStage{
-      position:relative;
-      z-index:2;
-      height: calc(var(--ringSize) + 16px);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: calc(var(--ringPad) + 10px) var(--ringPad) 18px var(--ringPad);
+      display:flex; align-items:baseline; gap:10px;
+      letter-spacing:.5px;
       user-select:none;
     }
-
-    .ring{
-      width: var(--ringSize);
-      height: var(--ringSize);
-      border-radius: 50%;
-      position:relative;
-      transform: translateZ(0);
-      outline:none;
+    .brand .title{
+      font-weight:750;
+      font-size:16px;
     }
-
-    /* Track / ring face */
-    .ring:before{
-      content:"";
-      position:absolute;
-      inset: 22px;
-      border-radius:50%;
-      border: 1px solid rgba(123,231,255,.22);
-      box-shadow:
-        0 0 0 1px rgba(45,125,255,.16) inset,
-        0 0 26px rgba(45,125,255,.14),
-        0 0 80px rgba(45,125,255,.08);
-      background:
-        radial-gradient(circle at 50% 50%, rgba(12,22,56,.40), rgba(7,11,26,.55));
-      z-index:0;
-    }
-    .ring:after{
-      content:"";
-      position:absolute;
-      inset: 64px;
-      border-radius:50%;
-      border: 1px dashed rgba(215,181,109,.18);
-      box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+    .brand .sub{
+      font-size:12px;
+      color: var(--muted);
       opacity:.9;
-      pointer-events:none;
-      z-index:0;
     }
 
-    /* Smaller center holo, and visually “quieter” */
-    .holo{
-      position:absolute;
-      inset: var(--holoInset);
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(12,22,56,.30), rgba(10,18,48,.14));
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 0 0 1px rgba(45,125,255,.08) inset;
-      backdrop-filter: blur(8px);
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      padding: 10px 10px 10px 10px;
-      pointer-events:auto; /* allow clicks on schedule links */
-      z-index:2;
-      opacity:.92;
-    }
-    .holo .holoTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .holo .tag{
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing:.14em;
-      text-transform: uppercase;
-      color: rgba(123,231,255,.82);
-    }
-    .holo .sub{
-      font-family: var(--mono);
-      font-size: 10px;
-      color: rgba(234,240,255,.60);
-      white-space:nowrap;
-    }
-
-    /* schedule block list wrapper so we can place the time marker */
-    .holoListWrap{
-      position:relative;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-      overflow:hidden;
-    }
-    .holoList{
-      display:grid;
-      gap: 8px;
-      padding: 10px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(234,240,255,.82);
-      max-height: 250px;
-      overflow:auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(123,231,255,.35) rgba(0,0,0,.0);
-    }
-    .holoList::-webkit-scrollbar{ width: 10px; }
-    .holoList::-webkit-scrollbar-thumb{
-      background: rgba(123,231,255,.24);
-      border-radius: 999px;
-      border: 3px solid rgba(0,0,0,.0);
-      background-clip: padding-box;
-    }
-    .holoList::-webkit-scrollbar-track{ background: transparent; }
-
-    .periodCard{
-      position:relative;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      padding: 9px 10px;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      box-shadow: 0 0 0 1px rgba(45,125,255,.06) inset;
-    }
-    .periodCard .t{
-      flex: 0 0 auto;
-      min-width: 78px;
-      color: rgba(234,240,255,.72);
-      font-size: 10px;
-      letter-spacing:.03em;
-      margin-top: 1px;
-    }
-    .periodCard .lbl{
-      flex:1;
-      min-width:0;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .periodCard.misc{
-      opacity:.78;
-      border-color: rgba(255,255,255,.08);
-    }
-    .periodCard.named{
-      border-color: rgba(123,231,255,.22);
-      box-shadow:
-        0 0 0 1px rgba(45,125,255,.10) inset,
-        0 0 18px rgba(45,125,255,.10);
-      background:
-        radial-gradient(220px 70px at 25% 0%, rgba(45,125,255,.12), transparent 70%),
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-    }
-    .periodCard.now{
-      border-color: rgba(215,181,109,.25);
-      box-shadow:
-        0 0 0 1px rgba(215,181,109,.14) inset,
-        0 0 22px rgba(215,181,109,.10);
-    }
-    .periodCard a.periodLink{
-      color: rgba(234,240,255,.92);
-      text-decoration:none;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      min-width:0;
-    }
-    .periodCard a.periodLink:hover{
-      text-decoration: underline;
-      text-decoration-color: rgba(123,231,255,.55);
-      text-underline-offset: 3px;
-    }
-    .linkBadge{
-      flex: 0 0 auto;
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(123,231,255,.22);
-      color: rgba(123,231,255,.92);
-      background: rgba(45,125,255,.10);
-      white-space:nowrap;
-    }
-
-
-    /* orbit nodes */
-    .node{
-      position:absolute;
-      width: var(--nodeW);
-      height: var(--nodeH);
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      will-change: transform;
-      cursor:pointer;
-      z-index:5;
-    }
-
-    /* Circular rotating cards */
-    .cardLink{
-      width: 100%;
-      height: 100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding: 12px 10px;
-      border-radius: 50%;
-      text-decoration:none;
-      color: var(--ink);
-      background:
-        radial-gradient(90px 70px at 35% 25%, rgba(123,231,255,.18), transparent 70%),
-        radial-gradient(90px 70px at 70% 75%, rgba(215,181,109,.10), transparent 75%),
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03)),
-        linear-gradient(180deg, rgba(12,22,56,.82), rgba(10,18,48,.72));
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow:
-        0 0 0 1px rgba(45,125,255,.10) inset,
-        0 16px 28px rgba(0,0,0,.42);
-      transition: transform .12s ease, border-color .18s ease, filter .18s ease;
-      position:relative;
-      overflow:hidden;
-      pointer-events:auto;
-    }
-    .cardLink::after{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      border-radius: 50%;
-      background:
-        radial-gradient(22px 12px at 22% 30%, rgba(123,231,255,0), rgba(123,231,255,0) 60%, rgba(123,231,255,.18) 66%, rgba(123,231,255,0) 80%),
-        radial-gradient(22px 12px at 78% 62%, rgba(45,125,255,0), rgba(45,125,255,0) 60%, rgba(45,125,255,.14) 66%, rgba(45,125,255,0) 80%);
-      opacity:.0;
-      pointer-events:none;
-      transition: opacity .18s ease;
-    }
-    .cardLink:hover{
-      transform: translateY(-2px) scale(1.01);
-      border-color: rgba(123,231,255,.30);
-      filter: brightness(1.06);
-    }
-    .cardLink:hover::after{ opacity:.9; }
-    .cardLink:active{
-      transform: translateY(-1px) scale(1.005);
-    }
-    .cardTitle{
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing:.08em;
-      text-transform: uppercase;
-      text-align:center;
-      line-height:1.15;
-      padding: 0 6px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 100%;
-    }
-    .cardSub{
-      font-family: var(--mono);
-      font-size: 9px;
-      color: rgba(234,240,255,.70);
-      text-align:center;
-      padding: 0 8px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 100%;
-    }
-    .glyph{
-      width: 40px;
-      height: 40px;
-      border-radius: 14px;
-      background:
-        linear-gradient(180deg, rgba(215,181,109,.92), rgba(138,107,47,.74));
-      box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset, 0 10px 18px rgba(0,0,0,.35);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#120f07;
-      font-weight: 900;
-      font-family: var(--mono);
-      flex: 0 0 auto;
-    }
-
-    /* energy bar */
-    .energyWrap{
-      position:relative;
-      z-index:4;
-      padding: 0 14px 14px 14px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .energyBar{
-      width: min(760px, 92%);
-      height: 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.18) inset;
-      position:relative;
-      overflow:hidden;
-    }
-.energyFill{
-  height: 100%;
-  width: 0%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(123,231,255,.95), rgba(45,125,255,.92), rgba(75,255,211,.62));
-  box-shadow: 0 0 22px rgba(45,125,255,.24);
-  transition: width 1.2s ease;
-  position:relative;
-  overflow:hidden;
-
-  /* JS will set this each update so speed is constant */
-  --pulseDur: 3s;
-}
-/* subtle electric micro-arc brightness pulse */
-.energyFill{
-  animation: energyJitter 2.2s steps(2,end) infinite;
-}
-
-@keyframes energyJitter{
-  0%,100% { filter: brightness(1); }
-  50% { filter: brightness(1.06); }
-}
-
-/* A subtle “electric sweep” that travels across ONLY the filled area */
-/* Electric sweep + crackle texture */
-.energyFill::after{
-  content:"";
-  position:absolute;
-  inset: 0;
-
-  /* Layer 1: sweeping bright band */
-  background:
-    linear-gradient(90deg,
-      rgba(45,125,255,0) 0%,
-      rgba(45,125,255,.18) 34%,
-      rgba(123,231,255,.55) 50%,
-      rgba(45,125,255,.18) 66%,
-      rgba(45,125,255,0) 100%
-    );
-
-  transform: translateX(-120%);
-  animation: energySweep var(--pulseDur) linear infinite;
-  mix-blend-mode: screen;
-  opacity: .70;
-  filter: blur(.25px);
-  pointer-events:none;
-}
-
-/* Layer 2: crackle overlay inside the fill */
-.energyFill::before{
-  content:"";
-  position:absolute;
-  inset: 0;
-  pointer-events:none;
-
-  /* A noisy “lightning filament” feel using repeating gradients */
-  background:
-    repeating-linear-gradient(
-      115deg,
-      rgba(123,231,255,.00) 0px,
-      rgba(123,231,255,.00) 6px,
-      rgba(123,231,255,.22) 7px,
-      rgba(123,231,255,.00) 10px
-    ),
-    repeating-linear-gradient(
-      65deg,
-      rgba(45,125,255,.00) 0px,
-      rgba(45,125,255,.00) 10px,
-      rgba(45,125,255,.18) 11px,
-      rgba(45,125,255,.00) 16px
-    ),
-    radial-gradient(120px 40px at 20% 50%, rgba(75,255,211,.12), transparent 70%),
-    radial-gradient(140px 50px at 80% 55%, rgba(123,231,255,.10), transparent 72%);
-
-  mix-blend-mode: screen;
-  opacity: .35;
-  filter: blur(.35px);
-
-  /* subtle flicker */
-  animation: energyFlicker 1.25s steps(2,end) infinite;
-}
-
-/* Edge “ionization” glow along the top/bottom of the filled bar */
-.energyFill{
-  position:relative;
-}
-.energyFill{
-  box-shadow:
-    0 0 22px rgba(45,125,255,.24),
-    0 0 0 1px rgba(123,231,255,.10) inset;
-}
-.energyFill{
-  background:
-    linear-gradient(90deg, rgba(123,231,255,.95), rgba(45,125,255,.92), rgba(75,255,211,.62));
-}
-.energyFill{
-  /* faint top/bottom glow lines */
-  background-image:
-    linear-gradient(90deg, rgba(123,231,255,.95), rgba(45,125,255,.92), rgba(75,255,211,.62)),
-    linear-gradient(180deg, rgba(123,231,255,.22), rgba(123,231,255,0)),
-    linear-gradient(0deg, rgba(45,125,255,.18), rgba(45,125,255,0));
-  background-blend-mode: normal, screen, screen;
-}
-
-@keyframes energySweep{
-  from { transform: translateX(-120%); }
-  to   { transform: translateX(120%); }
-}
-
-@keyframes energyFlicker{
-  0%   { opacity: .26; filter: blur(.35px); }
-  25%  { opacity: .40; filter: blur(.25px); }
-  55%  { opacity: .30; filter: blur(.40px); }
-  100% { opacity: .38; filter: blur(.22px); }
-}    /* Right cockpit panel */
-    .cockpit{
-      border-radius: var(--radius2);
-      background: linear-gradient(180deg, rgba(12,22,56,.82), rgba(10,18,48,.70));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
-    }
-    .cockpit::before{
-      content:"";
-      position:absolute;
-      inset:-2px;
-      background:
-        radial-gradient(620px 360px at 30% 10%, rgba(123,231,255,.14), transparent 60%),
-        radial-gradient(520px 260px at 70% 80%, rgba(215,181,109,.08), transparent 65%);
-      filter: blur(10px);
-      opacity:.9;
-      pointer-events:none;
-    }
-
-    .cockHeader{
-      position:relative;
-      z-index:2;
-      padding: 14px 14px 12px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap: 10px;
-      background: linear-gradient(to bottom, rgba(255,255,255,.06), transparent);
-    }
-    .cockHeader .left{
-      display:flex;
-      flex-direction:column;
-      gap: 4px;
-    }
-    .cockHeader .left b{
-      font-family: var(--mono);
-      letter-spacing:.14em;
-      text-transform: uppercase;
-      font-size: 12px;
-      color: rgba(234,240,255,.85);
-    }
-    .cockHeader .left span{
-      font-size: 12px;
-      color: rgba(234,240,255,.70);
+    .topRight{
+      display:flex; align-items:center; gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
     .pill{
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(234,240,255,.72);
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      border-radius: 999px;
-      padding: 8px 10px;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      box-shadow: 0 0 0 1px rgba(0,0,0,.14) inset;
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background: var(--pillBg);
+      border: 1px solid var(--pillBd);
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
+      color: var(--ink);
+      font-size:12px;
+      line-height:1;
       white-space:nowrap;
-      position:relative;
-      overflow:hidden;
-      z-index:2;
     }
-    .pill .spark{
-      width: 8px; height: 8px; border-radius:50%;
-      background: rgba(123,231,255,.95);
-      box-shadow: 0 0 12px rgba(123,231,255,.35);
-    }
-
-    .cockBody{
-      position:relative;
-      z-index:2;
-      padding: 14px;
-      display:grid;
-      gap: 12px;
-    }
-
-    .module{
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      box-shadow: 0 0 0 1px rgba(45,125,255,.08) inset, 0 12px 26px rgba(0,0,0,.28);
-      overflow:hidden;
-      position:relative;
-    }
-    .module::before{
-      content:"";
-      position:absolute;
-      inset:-1px;
-      background:
-        radial-gradient(280px 80px at 20% 10%, rgba(215,181,109,.08), transparent 70%),
-        radial-gradient(240px 70px at 85% 85%, rgba(75,255,211,.05), transparent 70%);
-      opacity:.9;
-      pointer-events:none;
-    }
-
-    .moduleHd{
-      padding: 12px 12px 10px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      background: linear-gradient(to bottom, rgba(255,255,255,.06), transparent);
-      position:relative;
-      z-index:2;
-    }
-    .moduleHd b{
-      font-family: var(--mono);
-      font-size: 12px;
-      letter-spacing:.14em;
-      text-transform: uppercase;
-      color: rgba(123,231,255,.88);
-    }
-    .moduleHd .mini{
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+    .pill strong{ font-weight:800; letter-spacing:.3px; }
+    .pill .muted{ color:var(--muted); opacity:.9; }
 
     .btn{
-      border:none;
       cursor:pointer;
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 900;
-      padding: 9px 10px;
-      border-radius: 14px;
-      transition: transform .08s ease, filter .18s ease, background .18s ease;
+      border:none;
+      border-radius: 12px;
+      padding:10px 12px;
+      background: linear-gradient(180deg, rgba(45,125,255,.18), rgba(45,125,255,.08));
+      border: 1px solid rgba(45,125,255,.35);
+      color: var(--ink);
+      font-weight:650;
+      letter-spacing:.2px;
+      box-shadow: var(--shadow2);
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
       user-select:none;
-      white-space:nowrap;
-      position:relative;
-      z-index:2;
     }
-    .btn:active{ transform: translateY(1px); }
+    .btn:hover{ transform: translateY(-1px); border-color: rgba(123,231,255,.45); }
+    .btn:active{ transform: translateY(0px); }
 
-    .btnPrimary{
-      color:#07101f;
-      background: linear-gradient(180deg, rgba(123,231,255,.95), rgba(45,125,255,.92));
-      box-shadow: 0 0 0 1px rgba(255,255,255,.14) inset, 0 12px 22px rgba(0,0,0,.34);
+    .btn.ghost{
+      background: rgba(234,240,255,.06);
+      border: 1px solid rgba(123,231,255,.18);
+      color: var(--muted);
+      font-weight:650;
     }
-    .btnGhost{
-      color: rgba(234,240,255,.88);
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.14);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.16) inset;
+    .btn.warn{
+      background: rgba(255,181,90,.10);
+      border: 1px solid rgba(255,181,90,.35);
     }
-    .btnDanger{
-      color: rgba(255,90,90,.95);
-      background: rgba(255,90,90,.08);
-      border: 1px solid rgba(255,90,90,.22);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.14) inset;
+    .btn.danger{
+      background: rgba(255,90,90,.10);
+      border: 1px solid rgba(255,90,90,.35);
     }
-    .btnGhost:hover,.btnPrimary:hover{ filter: brightness(1.05); }
 
-    .moduleBd{
-      padding: 12px;
+    /* LEFT CONTENT */
+    .leftBody{
       display:grid;
-      gap: 10px;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      height:100%;
       position:relative;
-      z-index:2;
     }
 
-    label{
-      display:block;
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing:.06em;
-      text-transform: uppercase;
-      color: rgba(234,240,255,.70);
-      margin: 0 0 6px 0;
-    }
-    input[type="text"], select, textarea{
-      width:100%;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(7,11,26,.35);
-      color: var(--ink);
-      padding: 10px 10px;
-      outline:none;
-      font-family: var(--mono);
-      font-size: 13px;
-      transition: box-shadow .15s ease, border-color .15s ease;
-      position:relative;
-      z-index:2;
-    }
-    input[type="text"]:focus, select:focus, textarea:focus{
-      border-color: rgba(123,231,255,.30);
-      box-shadow: 0 0 0 4px rgba(45,125,255,.18);
-    }
-    textarea{ min-height: 120px; resize: vertical; }
-
-    /* Checklist */
-    .checkTop{
-      display:flex;
-      gap:8px;
-      align-items:center;
-    }
-    .checkTop input{ flex:1; }
-
-    .checkMetaRow{
+    .searchRow{
+      padding:12px 14px;
+      border-bottom: 1px solid rgba(123,231,255,.10);
       display:flex;
       gap:10px;
       align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
-      margin-top: 2px;
     }
-    .checkMetaRow .left{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .checkMetaRow .right{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
-    .checkFilter{
-      width: 220px;
-      max-width: 100%;
-      padding: 9px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(7,11,26,.28);
-      color: var(--ink);
-      font-family: var(--mono);
-      font-size: 12px;
-      outline:none;
-    }
-    .checkFilter:focus{
-      border-color: rgba(123,231,255,.30);
-      box-shadow: 0 0 0 4px rgba(45,125,255,.14);
-    }
-
-    .checkList{
-      display:grid;
-      gap: 8px;
-      margin-top: 2px;
-    }
-    .checkItem{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      font-family: var(--mono);
-      font-size: 12px;
-      color: rgba(234,240,255,.86);
-      position:relative;
-    }
-    .checkItem input[type="checkbox"]{
-      width: 18px; height: 18px;
-      margin-top: 2px;
-      accent-color: var(--cyan);
-      flex: 0 0 auto;
-    }
-    .checkItem .txt{
+    .searchWrap{
       flex:1;
-      line-height:1.25;
-      word-break: break-word;
-      min-width: 0;
-      cursor: text;
+      position:relative;
+      display:flex;
+      align-items:center;
     }
-    .checkItem.done{
-      opacity:.68;
-      border-color: rgba(255,255,255,.10);
-    }
-    .checkItem.done .txt{
-      text-decoration: line-through;
-      color: rgba(183,194,230,.76);
-    }
-    /* ===== Completion animation (electric pulse -> dim) ===== */
-    @keyframes completePulse{
-      0%{
-        transform: translateZ(0) scale(1);
-        filter: brightness(1);
-        box-shadow:
-          0 0 0 1px rgba(123,231,255,.18) inset,
-          0 12px 26px rgba(0,0,0,.28);
-      }
-      35%{
-        transform: translateZ(0) scale(1.01);
-        filter: brightness(1.12) saturate(1.05);
-        box-shadow:
-          0 0 0 1px rgba(123,231,255,.30) inset,
-          0 0 22px rgba(45,125,255,.35),
-          0 12px 26px rgba(0,0,0,.28);
-      }
-      70%{
-        transform: translateZ(0) scale(1.005);
-        filter: brightness(1.06);
-        box-shadow:
-          0 0 0 1px rgba(123,231,255,.22) inset,
-          0 0 14px rgba(45,125,255,.22),
-          0 12px 26px rgba(0,0,0,.28);
-      }
-      100%{
-        transform: translateZ(0) scale(1);
-        filter: brightness(.92);
-        box-shadow:
-          0 0 0 1px rgba(255,255,255,.10) inset,
-          0 12px 26px rgba(0,0,0,.24);
-      }
-    }
-
-    @keyframes electricSheen{
-      0%{ opacity: 0; transform: translateX(-130%) rotate(8deg); }
-      20%{ opacity: .85; }
-      60%{ opacity: .55; }
-      100%{ opacity: 0; transform: translateX(130%) rotate(8deg); }
-    }
-
-    /* Applied only for the brief completion moment */
-    .checkItem.completing{
-      border-color: rgba(123,231,255,.28) !important;
-      animation: completePulse 700ms ease-out both;
-    }
-    .checkItem.completing::before{
-      content:"";
-      position:absolute;
-      inset:-1px;
+    .search{
+      width:100%;
+      background: rgba(7,11,26,.35);
+      border: 1px solid rgba(123,231,255,.18);
       border-radius: 14px;
-      pointer-events:none;
-      background:
-        radial-gradient(220px 90px at 20% 10%, rgba(123,231,255,.18), transparent 68%),
-        radial-gradient(240px 110px at 80% 70%, rgba(45,125,255,.14), transparent 70%),
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0));
-      mix-blend-mode: screen;
-      opacity:.9;
+      padding:12px 12px 12px 40px;
+      color: var(--ink);
+      outline:none;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.05);
     }
-    .checkItem.completing::after{
-      content:"";
+    .search::placeholder{ color: rgba(183,194,230,.72); }
+    .searchIcon{
       position:absolute;
-      inset:-8px;
-      border-radius: 18px;
+      left:12px;
+      width:18px; height:18px;
+      opacity:.85;
+      color: var(--cyan);
+      filter: drop-shadow(0 0 10px rgba(123,231,255,.25));
       pointer-events:none;
-      background:
-        linear-gradient(90deg,
-          rgba(45,125,255,0) 0%,
-          rgba(45,125,255,.22) 35%,
-          rgba(123,231,255,.65) 50%,
-          rgba(45,125,255,.22) 65%,
-          rgba(45,125,255,0) 100%
-        );
-      opacity:.55;
-      filter: blur(.35px);
-      animation: electricSheen 650ms linear both;
+      font-family: var(--mono);
     }
-    /* drag handle only */
-    .dragHandle{
-      width: 18px;
-      height: 18px;
-      margin-top: 1px;
-      flex: 0 0 auto;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.03);
+
+    .ringZone{
+      position:relative;
+      padding:14px;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      min-height: 520px;
+    }
+
+    .ringFrame{
+      width:min(100%, 720px);
+      height:min(100%, 720px);
+      aspect-ratio: 1 / 1;
+      position:relative;
+      border-radius: 28px;
+      border: 1px solid rgba(123,231,255,.14);
+      background: radial-gradient(closest-side, rgba(12,22,56,.70), rgba(7,11,26,.10) 62%, rgba(7,11,26,.02));
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
+
+    .ringCanvas{
+      position:absolute;
+      inset: 10px;
+      border-radius: 24px;
+      border: 1px solid rgba(123,231,255,.10);
+      background: radial-gradient(closest-side, rgba(7,11,26,.32), rgba(7,11,26,.06) 70%);
+    }
+
+    .ring{
+      position:absolute;
+      inset: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(123,231,255,.16);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.12);
+      background: radial-gradient(closest-side, rgba(7,11,26,.05), rgba(7,11,26,.0) 70%);
+    }
+
+    /* tiny periodic arcs on ring frame */
+    .ringFrame:before{
+      content:"";
+      position:absolute; inset:0;
+      border-radius: 28px;
+      pointer-events:none;
+      background: radial-gradient(650px 220px at 50% -10%, rgba(45,125,255,.25), transparent 60%),
+                  radial-gradient(500px 200px at 120% 40%, rgba(123,231,255,.18), transparent 55%),
+                  radial-gradient(500px 200px at -20% 60%, rgba(75,255,211,.12), transparent 55%);
+      opacity:.55;
+      mix-blend-mode: screen;
+    }
+
+    .centerBox{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      width: var(--centerBoxW);
+      height: var(--centerBoxH);
+      border-radius: 20px;
+      border: 1px solid rgba(123,231,255,.18);
+      background: linear-gradient(180deg, rgba(7,11,26,.65), rgba(12,22,56,.60));
+      box-shadow: var(--shadow2);
+      padding:12px 12px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:hidden;
+      z-index:4;
+    }
+
+    .centerTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .clockWrap{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 140px;
+    }
+    .clock{
+      font-family: var(--mono);
+      font-weight:800;
+      letter-spacing:.6px;
+      font-size:18px;
+      line-height:1.1;
+    }
+    .dateLine{
+      color: var(--muted);
+      font-size:12px;
+    }
+
+    .nextClass{
+      margin-top:6px;
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.2;
+      padding:7px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(123,231,255,.14);
+      background: rgba(234,240,255,.05);
+    }
+    .nextClass strong{ color: var(--ink); }
+    .nextClass.hot{
+      border-color: rgba(45,125,255,.55);
+      box-shadow: 0 0 0 1px rgba(45,125,255,.18), 0 0 18px rgba(45,125,255,.22);
+      color: rgba(234,240,255,.95);
+    }
+
+    .scheduleMini{
+      flex:1;
+      border-radius: 16px;
+      border: 1px solid rgba(123,231,255,.12);
+      background: rgba(7,11,26,.32);
+      padding:10px 10px;
+      overflow:auto;
+    }
+    .schedLine{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:5px 0;
+      border-bottom: 1px dashed rgba(123,231,255,.10);
+      font-size:12px;
+    }
+    .schedLine:last-child{ border-bottom:none; }
+    .schedLine .t{ font-family: var(--mono); color: var(--muted); min-width:68px; }
+    .schedLine .n{ flex:1; }
+    .schedLine.named .n{
+      color: var(--mako);
+      font-weight:800;
+      text-shadow: 0 0 10px rgba(75,255,211,.18);
+    }
+
+    /* Ring nodes */
+    .node{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      width: 88px;
+      height: 88px;
+      border-radius: 999px;
+      border: 1px solid rgba(123,231,255,.22);
+      background: radial-gradient(closest-side, rgba(45,125,255,.18), rgba(7,11,26,.28) 62%, rgba(7,11,26,.12));
+      box-shadow: 0 16px 30px rgba(0,0,0,.35);
       display:flex;
       align-items:center;
       justify-content:center;
-      cursor: grab;
-      user-select:none;
-      opacity:.85;
-    }
-    .dragHandle:active{ cursor: grabbing; }
-    .dragHandle::before{
-      content:"⋮⋮";
-      font-size: 12px;
-      letter-spacing: -2px;
-      color: rgba(234,240,255,.55);
-      transform: translateY(-1px);
-    }
-    .checkItem.dragOver{
-      border-color: rgba(123,231,255,.28);
-      box-shadow: 0 0 0 1px rgba(45,125,255,.10) inset, 0 0 18px rgba(45,125,255,.12);
-    }
-
-    /* actions */
-    .checkActions{
-      display:flex;
-      gap:6px;
-      flex: 0 0 auto;
-      align-items:center;
-      margin-top: -2px;
-    }
-    .iconBtn{
-      border:none;
+      padding:10px;
       cursor:pointer;
-      font-family: var(--mono);
-      font-weight: 900;
-      font-size: 11px;
-      padding: 6px 8px;
-      border-radius: 10px;
-      color: rgba(234,240,255,.86);
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 0 0 1px rgba(0,0,0,.14) inset;
       user-select:none;
+      overflow:hidden;
+      z-index:3;
+      transition: transform .12s ease, border-color .16s ease;
     }
-    .iconBtn:hover{ filter: brightness(1.06); }
-    .iconBtn:active{ transform: translateY(1px); }
-    .iconBtn.danger{
-      color: rgba(255,90,90,.95);
-      background: rgba(255,90,90,.08);
-      border-color: rgba(255,90,90,.22);
+    .node:hover{ border-color: rgba(123,231,255,.45); transform: translate(-50%,-50%) scale(1.03); }
+    .node .label{
+      text-align:center;
+      font-size:12px;
+      font-weight:750;
+      line-height:1.1;
+      padding:2px 3px;
+      text-shadow: 0 0 14px rgba(45,125,255,.25);
     }
-    .iconBtn.priOn{
-      color: rgba(182,107,255,.98);
-      border-color: rgba(182,107,255,.30);
-      background: rgba(124,60,255,.12);
-      box-shadow: 0 0 0 1px rgba(182,107,255,.10) inset, 0 0 14px rgba(124,60,255,.18);
+    .node .sub{
+      display:block;
+      margin-top:4px;
+      font-size:10px;
+      color: var(--muted);
+      font-weight:650;
     }
 
-    /* tags + due chips */
-    .chipRow{
+    /* Node context menu */
+    .ctx{
+      position:fixed;
+      min-width: 240px;
+      background: linear-gradient(180deg, rgba(12,22,56,.96), rgba(7,11,26,.92));
+      border: 1px solid rgba(123,231,255,.20);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding:10px;
+      z-index:999;
+      display:none;
+    }
+    .ctx.on{ display:block; }
+    .ctx h4{
+      margin:0 0 8px;
+      font-size:12px;
+      color: var(--muted);
+      letter-spacing:.25px;
+    }
+    .ctx .row{ display:flex; gap:8px; margin:8px 0; }
+    .ctx input{
+      width:100%;
+      background: rgba(7,11,26,.35);
+      border: 1px solid rgba(123,231,255,.16);
+      border-radius: 12px;
+      padding:10px;
+      color: var(--ink);
+      outline:none;
+      font-family: var(--sans);
+      font-size:12px;
+    }
+    .ctx input::placeholder{ color: rgba(183,194,230,.7); }
+    .ctx .row .btn{ flex:1; padding:10px 10px; border-radius: 12px; font-size:12px; }
+    .ctx .miniHelp{
+      font-size:11px;
+      color: rgba(183,194,230,.85);
+      line-height:1.25;
+      margin-top:6px;
+    }
+
+    /* RIGHT PANEL */
+    .right .topbar{
+      border-bottom: 1px solid rgba(123,231,255,.12);
+    }
+    .rightBody{
       display:flex;
-      gap:6px;
+      flex-direction:column;
+      height:100%;
+      overflow:hidden;
+    }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      padding:12px 14px 0;
       flex-wrap:wrap;
-      margin-top: 6px;
+    }
+    .tab{
+      cursor:pointer;
+      padding:9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(123,231,255,.16);
+      background: rgba(234,240,255,.05);
+      color: var(--muted);
+      font-size:12px;
+      font-weight:750;
+      user-select:none;
+    }
+    .tab.on{
+      color: var(--ink);
+      border-color: rgba(45,125,255,.45);
+      background: rgba(45,125,255,.12);
+      box-shadow: 0 0 0 1px rgba(45,125,255,.10);
+    }
+
+    .panel{
+      padding:12px 14px 14px;
+      overflow:auto;
+      flex:1;
+    }
+
+    .sectionTitle{
+      font-size:12px;
+      color: var(--muted);
+      letter-spacing:.3px;
+      margin:10px 0 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .item{
+      border-radius: 18px;
+      border: 1px solid rgba(123,231,255,.14);
+      background: rgba(7,11,26,.25);
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      padding:10px 10px;
+    }
+
+    .itemTop{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .chk{
+      width:18px; height:18px;
+      border-radius: 6px;
+      border: 1px solid rgba(123,231,255,.22);
+      background: rgba(234,240,255,.03);
+      cursor:pointer;
+      display:grid; place-items:center;
+      margin-top:2px;
+      flex:0 0 auto;
+    }
+    .chk.on{
+      border-color: rgba(75,255,211,.45);
+      box-shadow: 0 0 0 1px rgba(75,255,211,.10), 0 0 14px rgba(75,255,211,.14);
+    }
+    .chk svg{ opacity:.0; }
+    .chk.on svg{ opacity:1; }
+
+    .txtWrap{ flex:1; min-width:0; }
+    .txt{
+      font-size:13px;
+      line-height:1.2;
+      font-weight:650;
+      word-break: break-word;
+    }
+    .txt.done{
+      opacity:.65;
+      text-decoration: line-through;
+      text-decoration-thickness: 2px;
+    }
+
+    .metaRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+      align-items:center;
     }
     .chip{
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(234,240,255,.78);
-      white-space:nowrap;
-    }
-    .chip.tag{
-      border-color: rgba(123,231,255,.18);
-      background: rgba(45,125,255,.08);
-      color: rgba(123,231,255,.90);
-    }
-    .chip.due{
-      border-color: rgba(215,181,109,.18);
-      background: rgba(215,181,109,.08);
-      color: rgba(234,240,255,.85);
-    }
-
-    /* PRIORITY: PURPLE (more visible) */
-    .checkItem.priority{
-      border-color: rgba(182,107,255,.38);
-      box-shadow:
-        0 0 0 1px rgba(182,107,255,.16) inset,
-        0 0 26px rgba(124,60,255,.22);
-      background:
-        radial-gradient(320px 90px at 15% 0%, rgba(182,107,255,.18), transparent 65%),
-        rgba(255,255,255,.05);
-    }
-
-    /* DUE WARNING STATES (ADHD-friendly) */
-    @keyframes dueYellowGlow{
-      0%,100%{
-        box-shadow:
-          0 0 0 1px rgba(255,224,102,.22) inset,
-          0 0 14px rgba(255,224,102,.16);
-        filter: brightness(1);
-      }
-      50%{
-        box-shadow:
-          0 0 0 1px rgba(255,224,102,.32) inset,
-          0 0 26px rgba(255,224,102,.26);
-        filter: brightness(1.04);
-      }
-    }
-    .checkItem.due24:not(.done){
-      border-color: rgba(255,224,102,.32);
-      background:
-        radial-gradient(320px 90px at 15% 0%, rgba(255,224,102,.16), transparent 65%),
-        rgba(255,255,255,.05);
-      animation: dueYellowGlow 1.9s ease-in-out infinite;
-    }
-
-    @keyframes dueOrangeGlow{
-      0%,100%{
-        box-shadow:
-          0 0 0 1px rgba(255,154,61,.24) inset,
-          0 0 16px rgba(255,154,61,.18);
-        filter: brightness(1.01);
-      }
-      50%{
-        box-shadow:
-          0 0 0 1px rgba(255,154,61,.38) inset,
-          0 0 30px rgba(255,154,61,.30);
-        filter: brightness(1.07);
-      }
-    }
-    .checkItem.due1h:not(.done){
-      border-color: rgba(255,154,61,.38);
-      background:
-        radial-gradient(340px 100px at 15% 0%, rgba(255,154,61,.18), transparent 65%),
-        rgba(255,255,255,.05);
-      animation: dueOrangeGlow 1.35s ease-in-out infinite;
-    }
-
-    /* OVERDUE: RED + THROB */
-    @keyframes overdueThrob{
-      0%,100%{
-        box-shadow:
-          0 0 0 1px rgba(255,59,59,.28) inset,
-          0 0 18px rgba(255,59,59,.18);
-        transform: translateZ(0) scale(1);
-        filter: brightness(1.02);
-      }
-      50%{
-        box-shadow:
-          0 0 0 1px rgba(255,59,59,.48) inset,
-          0 0 36px rgba(255,59,59,.34);
-        transform: translateZ(0) scale(1.01);
-        filter: brightness(1.10);
-      }
-    }
-    .checkItem.overdue:not(.done){
-      border-color: rgba(255,59,59,.46);
-      background:
-        radial-gradient(360px 110px at 15% 0%, rgba(255,59,59,.16), transparent 65%),
-        rgba(255,255,255,.05);
-      animation: overdueThrob 1.05s ease-in-out infinite;
-    }
-    
-
-    /* inline editor */
-    .editInput{
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(7,11,26,.42);
-      color: var(--ink);
-      padding: 8px 10px;
-      outline:none;
-      font-family: var(--mono);
-      font-size: 12px;
-    }
-    .editInput:focus{
-      border-color: rgba(123,231,255,.30);
-      box-shadow: 0 0 0 4px rgba(45,125,255,.16);
-    }
-
-    /* toast (undo) */
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      transform: translateX(-50%);
-      z-index: 80;
-      background: linear-gradient(180deg, rgba(12,22,56,.92), rgba(10,18,48,.86));
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      border-radius: 16px;
-      padding: 10px 12px;
-      display:none;
-      gap: 10px;
+      display:inline-flex;
       align-items:center;
-      max-width: min(920px, 92vw);
-      font-family: var(--mono);
-      color: rgba(234,240,255,.86);
+      gap:6px;
+      font-size:11px;
+      color: var(--muted);
+      padding:7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(123,231,255,.14);
+      background: rgba(234,240,255,.04);
+      user-select:none;
     }
-    .toast.on{ display:flex; }
+    .chip b{ color: var(--ink); font-weight:850; }
+    .chip.hot{ border-color: rgba(255,181,90,.30); }
+    .chip.due{ border-color: rgba(45,125,255,.35); }
+    .chip.pri1{ border-color: rgba(255,90,90,.33); }
+    .chip.pri2{ border-color: rgba(255,181,90,.32); }
+    .chip.pri3{ border-color: rgba(123,231,255,.16); }
+
+    .controls{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:8px;
+    }
+    .controls .btn{
+      padding:10px 10px;
+      border-radius: 14px;
+      font-size:12px;
+      box-shadow:none;
+    }
+
+    .addRow{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+      align-items:center;
+    }
+    .addRow input{
+      flex:1;
+      background: rgba(7,11,26,.35);
+      border: 1px solid rgba(123,231,255,.16);
+      border-radius: 14px;
+      padding:12px 12px;
+      color: var(--ink);
+      outline:none;
+      font-size:13px;
+    }
+    .addRow input::placeholder{ color: rgba(183,194,230,.70); }
+
+    .small{
+      font-size:11px;
+      color: rgba(183,194,230,.85);
+      line-height:1.25;
+      margin-top:8px;
+    }
+
+    /* CALENDAR DRAWER */
+    .drawer{
+      position:fixed;
+      right: 16px;
+      top: 16px;
+      height: calc(100% - 32px);
+      width: min(460px, calc(100% - 32px));
+      background: linear-gradient(180deg, rgba(12,22,56,.98), rgba(7,11,26,.96));
+      border: 1px solid rgba(123,231,255,.20);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      z-index:1000;
+      transform: translateX(calc(100% + 18px));
+      transition: transform .20s ease;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .drawer.on{ transform: translateX(0); }
+
+    .drawerHead{
+      padding:12px 14px;
+      border-bottom: 1px solid rgba(123,231,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background: linear-gradient(180deg, rgba(7,11,26,.45), rgba(7,11,26,.12));
+    }
+    .drawerHead .h{
+      font-size:13px;
+      font-weight:850;
+      letter-spacing:.25px;
+    }
+    .drawerBody{
+      padding:12px 14px 14px;
+      overflow:auto;
+      flex:1;
+    }
+    .drawerGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .field{
+      border-radius: 18px;
+      border: 1px solid rgba(123,231,255,.14);
+      background: rgba(7,11,26,.25);
+      padding:10px;
+    }
+    .field label{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      font-size:11px;
+      color: rgba(183,194,230,.90);
+      margin-bottom:8px;
+      letter-spacing:.25px;
+    }
+    .field input[type="date"], .field textarea{
+      width:100%;
+      background: rgba(7,11,26,.35);
+      border: 1px solid rgba(123,231,255,.16);
+      border-radius: 14px;
+      padding:10px 12px;
+      color: var(--ink);
+      outline:none;
+      font-size:13px;
+      font-family: var(--sans);
+    }
+    .field textarea{
+      min-height: 160px;
+      resize: vertical;
+      line-height:1.25;
+    }
+    .drawerFoot{
+      padding:12px 14px;
+      border-top: 1px solid rgba(123,231,255,.12);
+      display:flex;
+      gap:10px;
+    }
+    .drawerFoot .btn{ flex:1; }
+
+    /* TOAST */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform: translate(-50%, 120%);
+      background: linear-gradient(180deg, rgba(12,22,56,.96), rgba(7,11,26,.92));
+      border: 1px solid rgba(123,231,255,.22);
+      border-radius: 999px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      box-shadow: var(--shadow);
+      z-index:1100;
+      transition: transform .18s ease;
+      max-width: calc(100% - 24px);
+    }
+    .toast.on{ transform: translate(-50%, 0); }
     .toast .msg{
-      font-size: 11px;
-      color: rgba(234,240,255,.78);
+      font-size:12px;
+      color: var(--muted);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      max-width: 68vw;
     }
-    .toast .undoBtn{
-      border:none;
-      cursor:pointer;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 900;
-      padding: 7px 10px;
-      border-radius: 999px;
-      color:#07101f;
-      background: linear-gradient(180deg, rgba(255,224,102,.95), rgba(215,181,109,.88));
-      box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
-      white-space:nowrap;
+    .toast .btn{ padding:8px 10px; border-radius: 999px; font-size:12px; box-shadow:none; }
+    .flash{
+      animation: flash 0.55s ease;
+    }
+    @keyframes flash{
+      0%{ box-shadow: 0 0 0 0 rgba(75,255,211,.0); }
+      20%{ box-shadow: 0 0 0 3px rgba(75,255,211,.18), 0 0 22px rgba(45,125,255,.18); }
+      100%{ box-shadow: 0 0 0 0 rgba(75,255,211,.0); }
     }
 
-    .tinyHint{
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(234,240,255,.62);
-      line-height:1.25;
-      position:relative;
-      z-index:2;
-    }
-
-    /* Export / import drawer */
-    .overlay{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index: 50;
-      padding: 18px;
-    }
-    .modal{
-      width: min(860px, 96vw);
-      border-radius: 22px;
-      background: linear-gradient(180deg, rgba(12,22,56,.92), rgba(10,18,48,.88));
-      border: 1px solid rgba(255,255,255,.16);
-      box-shadow: 0 24px 80px rgba(0,0,0,.60);
-      overflow:hidden;
-    }
-    .modalHd{
-      padding: 14px 14px 12px 14px;
-      border-bottom: 1px solid rgba(255,255,255,.12);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .modalHd b{
-      font-family: var(--mono);
-      letter-spacing:.14em;
-      text-transform: uppercase;
-      font-size: 12px;
-      color: rgba(123,231,255,.90);
-    }
-    .modalBd{
-      padding: 14px;
-      display:grid;
-      gap: 10px;
-    }
-
-    .footer{
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 0 16px 26px 16px;
-      color: rgba(183,194,230,.72);
-      font-family: var(--mono);
-      font-size: 11px;
-      text-align:center;
-      z-index:3;
-      position:relative;
+    /* Responsive */
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      .wrap{
+        height:auto;
+        grid-template-columns: 1fr;
+      }
+      .ringZone{ min-height: 520px; }
     }
   </style>
 </head>
-
 <body>
-  <!-- Matrix/electric cascade background -->
-  <canvas id="matrixBg" aria-hidden="true"></canvas>
 
-  <!-- Atmospheric overlays -->
-  <div class="fog" aria-hidden="true"></div>
-  <div class="scanlines" aria-hidden="true"></div>
-
-  <!-- Lightning canvas -->
-  <canvas id="fxLightning" aria-hidden="true"></canvas>
-
-  <div class="topbar">
-    <div class="topbarInner">
-      <div class="brand">
-        <div class="title">GEFFEN COCKPIT</div>
-        <div class="subtitle">Retro-future dashboard • wheel to rotate the ring • “/” focuses search</div>
-      </div>
-
-      <form class="searchWrap" action="https://www.google.com/search" method="GET" target="_blank" rel="noopener">
-        <div class="lens" aria-hidden="true"></div>
-        <input id="googleQ" name="q" type="text" placeholder="Search Google…" autocomplete="off" />
-        <button type="submit">SEARCH</button>
-      </form>
-
-      <div class="clockBox" aria-label="Clock">
-        <div class="clockTop">
-          <div class="date" id="dateStr">—</div>
-          <div class="time" id="timeStr">—</div>
-          <div class="ticks" id="ticksStr">.00</div>
-        </div>
-        <div class="countdown" id="countdownBox">
-          <span>Time until next class:</span> <b id="countdownText">—</b>
-        </div>
-      </div>
-    </div>
+  <!-- FX -->
+  <div class="fxLayer">
+    <canvas id="stars" class="fx"></canvas>
+    <canvas id="arcs" class="fx arcs"></canvas>
   </div>
 
-  <main class="shell">
-    <!-- LEFT: Ring bay -->
-    <section class="bay" id="bay">
-      <div class="trim" aria-hidden="true"></div>
-
-      <div class="bayHeader">
-        <div class="h1">
-          <b>Navigation Ring</b>
-          <span>Scroll your wheel over the ring to rotate. Click a node to launch.</span>
+  <div class="wrap">
+    <!-- LEFT -->
+    <section class="left">
+      <div class="topbar">
+        <div class="brand">
+          <div class="title">Geffen Cockpit</div>
+          <div class="sub">calendar + ring + checklist</div>
         </div>
-        <div class="datePick" aria-label="Select date to view schedule">
-          <div style="opacity:.85;">View date</div>
-          <div class="datePickRow">
-            <input type="date" id="viewDate" />
+
+        <div class="topRight">
+          <div class="pill" id="pillClock">
+            <strong id="pillTime">--:--</strong>
+            <span class="muted" id="pillDow">---</span>
           </div>
+          <button class="btn ghost" id="openDrawerBtn">Calendar</button>
+          <button class="btn ghost" id="editLinksBtn">Edit Links</button>
         </div>
       </div>
 
-      <div class="ringStage">
-        <div class="ring" id="ring" aria-label="Link ring" tabindex="0">
-          <!-- smaller center holo -->
-          <div class="holo" id="holo">
-            <div class="holoTop">
-              <div class="tag" id="holoTag">Daily Schedule</div>
-              <div class="sub" id="holoStatus">—</div>
-            </div>
+      <div class="leftBody">
+        <div class="searchRow">
+          <div class="searchWrap">
+            <div class="searchIcon">⌕</div>
+            <input id="googleQuery" class="search" placeholder="Search (press Enter)…" />
+          </div>
+          <button class="btn" id="goSearchBtn">Go</button>
+        </div>
 
-            <div class="holoListWrap">
-              <div class="holoList" id="holoList" aria-label="Daily schedule">
-                <div class="periodCard misc">
-                  <div class="t">—</div>
-                  <div class="lbl">Enter your schedule on the right.</div>
+        <div class="ringZone">
+          <div class="ringFrame" id="ringFrame">
+            <div class="ringCanvas"></div>
+            <div class="ring" id="ring"></div>
+
+            <!-- Center module -->
+            <div class="centerBox" id="centerBox">
+              <div class="centerTop">
+                <div class="clockWrap">
+                  <div class="clock" id="clockText">--:--:--</div>
+                  <div class="dateLine" id="dateText">---</div>
+                  <div class="nextClass" id="nextClassBox">
+                    <div><strong id="nextClassName">Next:</strong> <span id="nextClassWhen">--</span></div>
+                    <div class="muted" id="untilLine">Time until next class: --</div>
+                  </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+                  <div class="pill" id="pillViewDate">
+                    <span class="muted">Viewing</span>
+                    <strong id="viewDateLabel">----</strong>
+                  </div>
+                  <button class="btn ghost" id="todayBtn">Today</button>
                 </div>
               </div>
+
+              <div class="scheduleMini" id="miniSchedule"></div>
             </div>
           </div>
-          <!-- nodes inserted by JS -->
-        </div>
-      </div>
 
-      <div class="energyWrap">
-        <div style="width:100%;display:flex;flex-direction:column;align-items:center;">
-          <div class="energyBar" aria-label="Energy bar">
-            <div class="energyFill" id="energyFill"></div>
-          </div>
-          <div class="energyMeta">
-            <div><b>ENERGY GRID</b> <span id="energyPct">0%</span></div>
-            <div id="energyNote">Awaiting schedule…</div>
+          <!-- Node context menu -->
+          <div class="ctx" id="ctxMenu">
+            <h4 id="ctxTitle">Edit link</h4>
+            <div class="row">
+              <input id="ctxLabel" placeholder="Label (short)" />
+            </div>
+            <div class="row">
+              <input id="ctxUrl" placeholder="URL (https://…)" />
+            </div>
+            <div class="row">
+              <button class="btn" id="ctxSave">Save</button>
+              <button class="btn danger" id="ctxDelete">Delete</button>
+            </div>
+            <div class="row">
+              <button class="btn ghost" id="ctxCancel">Close</button>
+              <button class="btn ghost" id="ctxAdd">Add new</button>
+            </div>
+            <div class="miniHelp">Tip: right-click a node to edit. Drag nodes to reorder when “Edit Links” is on.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- RIGHT: Cockpit (Checklist + schedule setup only) -->
-    <aside class="cockpit" id="cockpit">
-      <div class="cockHeader">
-        <div class="left">
-          <b>Control Console</b>
-          <span>Checklist + schedule entry.</span>
+    <!-- RIGHT -->
+    <section class="right">
+      <div class="topbar">
+        <div class="brand">
+          <div class="title">Checklist</div>
+          <div class="sub" id="checklistSub">today</div>
         </div>
-        <div class="pill"><span class="spark"></span><span id="dayModePill">—</span></div>
-        <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Week Tasks Calendar (Local)</title>
-  <style>
-    :root{
-      --bg0:#070B1A;
-      --panel:#0C1638;
-      --ink:#EAF0FF;
-      --muted:#B7C2E6;
-      --electric:#2D7DFF;
-      --warn:#FFE066;
-      --danger:#FF5A5A;
-      --radius:16px;
-    }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: radial-gradient(1200px 700px at 50% 10%, #101B45 0%, var(--bg0) 55%, #050816 100%);
-      color:var(--ink);
-      padding:24px;
-    }
-    .wrap{ max-width: 980px; margin: 0 auto; }
-    .card{
-      background: linear-gradient(180deg, rgba(12,22,56,.92), rgba(9,16,41,.88));
-      border: 1px solid rgba(123,231,255,.12);
-      border-radius: var(--radius);
-      box-shadow: 0 18px 60px rgba(0,0,0,.55);
-      overflow:hidden;
-    }
-    header{
-      padding:16px 18px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      border-bottom: 1px solid rgba(123,231,255,.10);
-    }
-    header h1{
-      margin:0;
-      font-size: 14px;
-      letter-spacing:.14em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    header .range{
-      font-size: 13px;
-      color: var(--ink);
-      opacity:.9;
-    }
-
-    .addRow{
-      padding:14px 18px;
-      display:grid;
-      grid-template-columns: 1fr 180px 120px;
-      gap:10px;
-      border-bottom: 1px solid rgba(123,231,255,.08);
-    }
-    .addRow input, .addRow button{
-      border-radius: 12px;
-      border: 1px solid rgba(123,231,255,.14);
-      background: rgba(0,0,0,.18);
-      color: var(--ink);
-      padding: 10px 12px;
-      font-size: 14px;
-      outline: none;
-    }
-    .addRow input::placeholder{ color: rgba(234,240,255,.55); }
-    .addRow button{
-      cursor:pointer;
-      background: linear-gradient(180deg, rgba(45,125,255,.28), rgba(30,91,255,.18));
-      border-color: rgba(45,125,255,.35);
-      font-weight:600;
-    }
-    .addRow button:hover{ filter: brightness(1.08); }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-      padding: 14px 18px 18px;
-    }
-    .day{
-      min-height: 180px;
-      border-radius: 14px;
-      border: 1px solid rgba(123,231,255,.10);
-      background: rgba(255,255,255,.03);
-      overflow:hidden;
-      display:flex;
-      flex-direction:column;
-    }
-    .dayHead{
-      padding:10px 10px 8px;
-      border-bottom: 1px solid rgba(123,231,255,.08);
-      display:flex;
-      align-items:baseline;
-      justify-content:space-between;
-      gap:8px;
-    }
-    .dow{
-      font-weight:700;
-      font-size: 12px;
-      letter-spacing:.12em;
-      text-transform: uppercase;
-      color: rgba(123,231,255,.85);
-    }
-    .date{
-      font-size: 12px;
-      color: rgba(234,240,255,.75);
-    }
-    .pill{
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(123,231,255,.14);
-      color: rgba(234,240,255,.8);
-      background: rgba(0,0,0,.14);
-    }
-    .items{
-      padding: 8px 10px 10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .item{
-      border-radius: 12px;
-      padding: 8px 10px;
-      border: 1px solid rgba(123,231,255,.12);
-      background: rgba(0,0,0,.16);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .item .t{
-      font-size: 13px;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-    .item .meta{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      flex-shrink:0;
-    }
-    .item button{
-      border: 1px solid rgba(255,90,90,.35);
-      background: rgba(255,90,90,.12);
-      color: rgba(255,220,220,.92);
-      border-radius: 10px;
-      padding: 6px 8px;
-      cursor:pointer;
-      font-size: 12px;
-    }
-    .item button:hover{ filter: brightness(1.1); }
-
-    .note{
-      padding: 0 18px 16px;
-      color: rgba(234,240,255,.62);
-      font-size: 12px;
-    }
-
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: repeat(2, 1fr); }
-      .addRow{ grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <header>
-        <h1>Week View</h1>
-        <div class="range" id="rangeLabel"></div>
-      </header>
-
-      <div class="addRow">
-        <input id="taskTitle" type="text" placeholder="Task (e.g., Grade B block outlines)" />
-        <input id="taskDue" type="date" />
-        <button id="addBtn">Add task</button>
+        <div class="topRight">
+          <button class="btn ghost" id="clearDoneBtn">Clear done</button>
+          <button class="btn warn" id="undoBtn">Undo</button>
+        </div>
       </div>
 
-      <div class="grid" id="weekGrid"></div>
+      <div class="rightBody">
+        <div class="tabs">
+          <div class="tab on" data-tab="checklist">Checklist</div>
+          <div class="tab" data-tab="week">Week</div>
+          <div class="tab" data-tab="setup">Setup</div>
+        </div>
 
-      <div class="note">
-        Shows tasks due within the next 7 days (starting today). Data saves locally in your browser.
+        <div class="panel" id="panelChecklist">
+          <div class="sectionTitle">
+            <span>Items</span>
+            <span class="muted" id="countLine">0</span>
+          </div>
+          <div class="list" id="checkList"></div>
+
+          <div class="addRow">
+            <input id="newItemText" placeholder="Add an item…" />
+            <button class="btn" id="addItemBtn">Add</button>
+          </div>
+          <div class="small">Quick keys: Enter adds. Click priority/due/note on an item to set details.</div>
+        </div>
+
+        <div class="panel" id="panelWeek" style="display:none;">
+          <div class="sectionTitle">
+            <span>This week’s tasks</span>
+            <button class="btn ghost" id="syncWeekFromScheduleBtn">Auto from schedule</button>
+          </div>
+          <div class="list" id="weekTasks"></div>
+          <div class="small">This is lightweight: it shows what you’ve written into the Calendar drawer for each day.</div>
+        </div>
+
+        <div class="panel" id="panelSetup" style="display:none;">
+          <div class="sectionTitle"><span>Daily schedule template</span></div>
+          <div class="field">
+            <label>
+              <span>Named periods (comma-separated)</span>
+              <span class="muted">highlights in center</span>
+            </label>
+            <input id="namedPeriods" placeholder="B1, B2, Office Hours, Advisory…" />
+          </div>
+          <div class="field" style="margin-top:12px;">
+            <label><span>Default schedule lines</span><span class="muted">one per line: 08:30 | B1</span></label>
+            <textarea id="defaultSchedule" placeholder="08:30 | B1&#10;09:45 | B2&#10;11:00 | Prep&#10;…"></textarea>
+          </div>
+          <div class="addRow" style="margin-top:12px;">
+            <button class="btn" id="saveSetupBtn">Save setup</button>
+            <button class="btn ghost" id="resetSetupBtn">Reset</button>
+          </div>
+          <div class="small">Your daily schedule for a specific date can override this template via the Calendar drawer.</div>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
 
-  <script>
-    // ---------- Utilities ----------
-    const pad2 = n => String(n).padStart(2,'0');
-
-    function toLocalYMD(d){
-      const yr = d.getFullYear();
-      const mo = pad2(d.getMonth()+1);
-      const da = pad2(d.getDate());
-      return `${yr}-${mo}-${da}`;
-    }
-
-    function fromYMD(ymd){
-      const [y,m,d] = ymd.split("-").map(Number);
-      return new Date(y, m-1, d, 12, 0, 0, 0); // noon avoids DST edge weirdness
-    }
-
-    function addDays(date, n){
-      const d = new Date(date.getTime());
-      d.setDate(d.getDate()+n);
-      return d;
-    }
-
-    function formatShort(date){
-      return date.toLocaleDateString(undefined, { month:"numeric", day:"numeric" });
-    }
-
-    function formatDow(date){
-      return date.toLocaleDateString(undefined, { weekday:"short" });
-    }
-
-    // ---------- Storage ----------
-    const STORAGE_KEY = "cockpit_tasks_v1";
-
-    function loadTasks(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const arr = raw ? JSON.parse(raw) : [];
-        return Array.isArray(arr) ? arr : [];
-      }catch(e){
-        return [];
-      }
-    }
-
-    function saveTasks(tasks){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    }
-
-    // Task shape: { id, title, dueYMD, createdAt }
-    function createTask(title, dueYMD){
-      return {
-        id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2),
-        title: title.trim(),
-        dueYMD,
-        createdAt: Date.now()
-      };
-    }
-
-    // ---------- Rendering ----------
-    const weekGrid = document.getElementById("weekGrid");
-    const rangeLabel = document.getElementById("rangeLabel");
-
-    function render(){
-      const tasks = loadTasks();
-
-      const start = new Date();
-      start.setHours(12,0,0,0);
-
-      const days = Array.from({length:7}, (_,i)=> addDays(start, i));
-      const startYMD = toLocalYMD(days[0]);
-      const endYMD = toLocalYMD(days[6]);
-
-      rangeLabel.textContent = `${formatShort(days[0])} – ${formatShort(days[6])}`;
-
-      // index tasks by dueYMD (only within range)
-      const byDay = new Map();
-      for(const d of days) byDay.set(toLocalYMD(d), []);
-
-      for(const t of tasks){
-        if(byDay.has(t.dueYMD)){
-          byDay.get(t.dueYMD).push(t);
-        }
-      }
-
-      // sort tasks within each day (createdAt secondary)
-      for(const [k, arr] of byDay.entries()){
-        arr.sort((a,b)=>{
-          if(a.dueYMD !== b.dueYMD) return a.dueYMD.localeCompare(b.dueYMD);
-          return a.createdAt - b.createdAt;
-        });
-      }
-
-      // build DOM
-      weekGrid.innerHTML = "";
-      for(const d of days){
-        const ymd = toLocalYMD(d);
-        const list = byDay.get(ymd) || [];
-
-        const dayEl = document.createElement("div");
-        dayEl.className = "day";
-
-        const head = document.createElement("div");
-        head.className = "dayHead";
-        head.innerHTML = `
-          <div>
-            <div class="dow">${formatDow(d)}</div>
-            <div class="date">${formatShort(d)}</div>
-          </div>
-          <div class="pill">${list.length} due</div>
-        `;
-
-        const items = document.createElement("div");
-        items.className = "items";
-
-        if(list.length === 0){
-          const empty = document.createElement("div");
-          empty.style.opacity = ".55";
-          empty.style.fontSize = "12px";
-          empty.style.padding = "8px 2px";
-          empty.textContent = "No tasks due.";
-          items.appendChild(empty);
-        }else{
-          for(const t of list){
-            const it = document.createElement("div");
-            it.className = "item";
-
-            const title = document.createElement("div");
-            title.className = "t";
-            title.textContent = t.title;
-
-            const meta = document.createElement("div");
-            meta.className = "meta";
-
-            const del = document.createElement("button");
-            del.type = "button";
-            del.textContent = "Del";
-            del.title = "Delete task";
-            del.addEventListener("click", ()=>{
-              const next = loadTasks().filter(x => x.id !== t.id);
-              saveTasks(next);
-              render();
-            });
-
-            meta.appendChild(del);
-            it.appendChild(title);
-            it.appendChild(meta);
-            items.appendChild(it);
-          }
-        }
-
-        dayEl.appendChild(head);
-        dayEl.appendChild(items);
-        weekGrid.appendChild(dayEl);
-      }
-    }
-
-    // ---------- Add task ----------
-    const titleEl = document.getElementById("taskTitle");
-    const dueEl = document.getElementById("taskDue");
-    const addBtn = document.getElementById("addBtn");
-
-    function setDefaultDue(){
-      dueEl.value = toLocalYMD(new Date());
-    }
-
-    function addTask(){
-      const title = titleEl.value.trim();
-      const dueYMD = dueEl.value;
-
-      if(!title) return;
-      if(!dueYMD) return;
-
-      const tasks = loadTasks();
-      tasks.push(createTask(title, dueYMD));
-      // global sort by due date for sanity
-      tasks.sort((a,b)=> a.dueYMD.localeCompare(b.dueYMD) || (a.createdAt - b.createdAt));
-      saveTasks(tasks);
-
-      titleEl.value = "";
-      titleEl.focus();
-      render();
-    }
-
-    addBtn.addEventListener("click", addTask);
-    titleEl.addEventListener("keydown", (e)=>{
-      if(e.key === "Enter") addTask();
-    });
-
-    // ---------- Boot ----------
-    setDefaultDue();
-    render();
-  </script>
-</body>
-</html>
-      </div>
-
-      <div class="cockBody">
-        <!-- CHECKLIST MODULE -->
-        <div class="module">
-          <div class="moduleHd">
-            <div style="display:flex;gap:10px;align-items:center;">
-              <b>Checklist</b>
-              <span class="pill" style="padding:6px 10px;border-radius:999px;font-size:11px;">
-                <span class="spark" style="width:7px;height:7px;"></span>
-                <span id="checkProgress">0/0</span>
-              </span>
-            </div>
-            <div class="mini">
-              <button class="btn btnGhost" id="collapseDoneBtn" type="button">Hide Done</button>
-              <button class="btn btnGhost" id="clearCheckedBtn" type="button">Clear</button>
-              <button class="btn btnGhost" id="exportChecklistBtn" type="button">Export</button>
-            </div>
-          </div>
-          <div class="moduleBd">
-            <div class="checkTop">
-              <input id="newItemText" type="text" placeholder="Add an agenda item… (use #tags, add @YYYY-MM-DD or @2:30 for due)" />
-              <button class="btn btnPrimary" id="addItemBtn" type="button">Add Item</button>
-            </div>
-
-            <div class="checkMetaRow">
-              <div class="left">
-                <input class="checkFilter" id="checkFilter" type="text" placeholder="Filter… (text or #tag)" />
-                <div class="tinyHint" id="filterHint" style="margin-top:2px;">Tip: double-click to edit. ★ marks priority (orange).</div>
-              </div>
-              <div class="right">
-                <div class="tinyHint" id="dueHint" style="text-align:right;">Overdue items glow red (when due is set).</div>
-              </div>
-            </div>
-
-            <div class="checkList" id="checkList"></div>
-            <div class="tinyHint">Tip: press Enter to add. Drag using the handle. Export/import lives below.</div>
-          </div>
+  <!-- CALENDAR DRAWER -->
+  <aside class="drawer" id="drawer">
+    <div class="drawerHead">
+      <div class="h">Calendar drawer</div>
+      <button class="btn ghost" id="closeDrawerBtn">Close</button>
+    </div>
+    <div class="drawerBody">
+      <div class="drawerGrid">
+        <div class="field">
+          <label>
+            <span>Date</span>
+            <span class="muted">switch what you’re viewing</span>
+          </label>
+          <input type="date" id="viewDate" />
+          <div class="small">This updates the center schedule and the checklist on the right.</div>
         </div>
 
-        <!-- Portability (schedule + checklist) -->
-        <div class="module">
-          <div class="moduleHd">
-            <b>Portability</b>
-            <div class="mini">
-              <button class="btn btnGhost" id="exportBtn" type="button">Export</button>
-              <button class="btn btnGhost" id="importBtn" type="button">Import</button>
-            </div>
-          </div>
-          <div class="moduleBd">
-            <div class="tinyHint">Export gives you JSON for schedule settings + checklist. Import restores it.</div>
-          </div>
+        <div class="field">
+          <label>
+            <span>Schedule for this date</span>
+            <span class="muted">optional override</span>
+          </label>
+          <textarea id="scheduleText" placeholder="08:30 | B1&#10;09:45 | B2&#10;11:00 | Prep&#10;…"></textarea>
+          <div class="small">If left blank, the default schedule template is used.</div>
         </div>
 
-        <!-- Schedule setup (collapsed by default) -->
-        <div class="module" id="setupModule">
-          <div class="moduleHd">
-            <b>Schedule Setup</b>
-            <div class="mini">
-              <button class="btn btnGhost" id="toggleSetup" type="button">Expand</button>
-              <button class="btn btnPrimary" id="saveScheduleBtn" type="button">Save</button>
-            </div>
-          </div>
-          <div class="moduleBd" id="setupBody" style="display:none;">
-            <div style="display:grid;gap:10px;">
-              <div>
-                <label>Blue anchor date</label>
-                <input id="blueAnchor" type="text" placeholder="YYYY-MM-DD (a Monday you know is Blue)" />
-                <div class="tinyHint">Used for Auto week mode when rendering the schedule in the center of the ring.</div>
-              </div>
-              <div>
-                <label>Office hours on H block</label>
-                <select id="officeHoursMode">
-                  <option value="none">None</option>
-                  <option value="blue">Blue week only</option>
-                  <option value="gold">Gold week only</option>
-                  <option value="both">Both weeks</option>
-                </select>
-              </div>
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>A block name</label><input id="A" type="text" placeholder="e.g., Global History 10" /></div>
-                <div><label>B block name</label><input id="B" type="text" placeholder="e.g., Advanced ME History" /></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>C block name</label><input id="C" type="text" /></div>
-                <div><label>D block name</label><input id="D" type="text" /></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>E block name</label><input id="E" type="text" /></div>
-                <div><label>F block name</label><input id="F" type="text" /></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>G block name</label><input id="G" type="text" /></div>
-                <div><label>H block name</label><input id="H" type="text" /></div>
-              </div>
-
-              <div class="tinyHint" style="margin-top:4px;">Optional: set per-block links (e.g., Google Drive folders). Named class periods become clickable.</div>
-
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>A block link</label><input id="linkA" type="text" placeholder="https://..." /></div>
-                <div><label>B block link</label><input id="linkB" type="text" placeholder="https://..." /></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>C block link</label><input id="linkC" type="text" placeholder="https://..." /></div>
-                <div><label>D block link</label><input id="linkD" type="text" placeholder="https://..." /></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>E block link</label><input id="linkE" type="text" placeholder="https://..." /></div>
-                <div><label>F block link</label><input id="linkF" type="text" placeholder="https://..." /></div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                <div><label>G block link</label><input id="linkG" type="text" placeholder="https://..." /></div>
-                <div><label>H block link</label><input id="linkH" type="text" placeholder="https://..." /></div>
-              </div>
-
-              <div class="tinyHint">Once saved, the center holo shows the schedule for the selected date. The current period is highlighted automatically.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  </main>
-
-  <!-- Export/Import Modal -->
-  <div class="overlay" id="overlay">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="Export/Import">
-      <div class="modalHd">
-        <b id="modalTitle">Export</b>
-        <button class="btn btnGhost" id="closeModal" type="button">Close</button>
-      </div>
-      <div class="modalBd">
-        <div class="tinyHint" id="modalHint">Copy this JSON to move your setup to another computer.</div>
-        <textarea id="jsonBox" spellcheck="false"></textarea>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
-          <button class="btn btnGhost" id="copyJsonBtn" type="button">Copy</button>
-          <button class="btn btnPrimary" id="applyJsonBtn" type="button" style="display:none;">Apply</button>
+        <div class="field">
+          <label>
+            <span>Notes for this date</span>
+            <span class="muted">anything</span>
+          </label>
+          <textarea id="dayNotes" placeholder="Parent conferences, copies, email admin, etc…"></textarea>
         </div>
       </div>
     </div>
-  </div>
+    <div class="drawerFoot">
+      <button class="btn" id="saveDayBtn">Save day</button>
+      <button class="btn ghost" id="clearDayBtn">Clear override</button>
+    </div>
+  </aside>
 
-  <!-- Undo toast -->
+  <!-- TOAST -->
   <div class="toast" id="toast">
-    <div class="msg" id="toastMsg">—</div>
-    <button class="undoBtn" id="toastUndo" type="button">UNDO</button>
-  </div>
-
-  <div class="footer">
-    Wheel rotates the ring • Schedule + checklist saved in your browser (localStorage) • Export JSON for portability
+    <div class="msg" id="toastMsg">Saved.</div>
+    <button class="btn" id="toastUndo">Undo</button>
+    <button class="btn ghost" id="toastClose">Close</button>
   </div>
 
   <script>
     /************************************************************
-     * LINKS (ring nodes)
+     * STATE
      ************************************************************/
-    const links = [
-      { label:"Discussion", sub:"Tracker", href:"https://amhagler.github.io/class-discussion/", glyph:"DT" },
-      { label:"Seating Chart", sub:"Grid", href:"https://amhagler.github.io/SC/", glyph:"SC" },
-      { label:"Rubric", sub:"Generator", href:"https://amhagler.github.io/rubric/", glyph:"RB" },
-      { label:"Unit Calendar", sub:"Generator", href:"https://amhagler.github.io/uc/", glyph:"UC" },
-      { label:"Mafia", sub:"Game", href:"https://amhagler.github.io/mafia/", glyph:"MF" },
-      { label:"Trivia", sub:"Game", href:"https://amhagler.github.io/tr/", glyph:"TR" },
-      { label:"Portal", sub:"Login", href:"https://geffenacademy.myschoolapp.com/app#login", glyph:"PT" },
-      { label:"Gradebook", sub:"Direct", href:"https://geffenacademy.myschoolapp.com/sis-gradebook/gradebook/27966135?svcid=edu&addin=1", glyph:"GB" },
-    ];
-
-    const ring = document.getElementById("ring");
-    let rotation = 0; // radians
-    let targetRotation = 0;
-
-    function escapeHtml(s){
-      return String(s||"")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function buildNodes(){
-      ring.querySelectorAll(".node").forEach(n => n.remove());
-      links.forEach((l, idx) => {
-        const node = document.createElement("div");
-        node.className = "node";
-        node.dataset.idx = String(idx);
-        node.innerHTML = `
-          <a class="cardLink" href="${l.href}" target="_blank" rel="noopener" aria-label="${escapeHtml(l.label)}">
-            <div class="glyph">${escapeHtml(l.glyph)}</div>
-            <div class="cardTitle">${escapeHtml(l.label)}</div>
-            <div class="cardSub">${escapeHtml(l.sub)}</div>
-          </a>
-        `;
-        ring.appendChild(node);
-      });
-    }
-    buildNodes();
-
-    function computeOrbitRadius(){
-      const cs = getComputedStyle(document.documentElement);
-      const nodeW = parseFloat(cs.getPropertyValue("--nodeW")) || 132;
-      const ringPad = parseFloat(cs.getPropertyValue("--ringPad")) || 40;
-      const w = ring.clientWidth || 600;
-      const half = w / 2;
-      return Math.max(160, half - (nodeW / 2) - ringPad);
-    }
-
-    function layoutNodes(){
-      const nodes = Array.from(ring.querySelectorAll(".node"));
-      const r = computeOrbitRadius();
-      const n = nodes.length;
-      for (let i = 0; i < n; i++){
-        const theta = (Math.PI * 2) * (i / n) + rotation;
-        const x = Math.cos(theta) * r;
-        const y = Math.sin(theta) * r;
-        nodes[i].style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-      }
-    }
-
-    ring.addEventListener("wheel", (e) => {
-      e.preventDefault();
-      targetRotation += (e.deltaY || 0) * 0.0022;
-    }, { passive:false });
-
-    function animateRing(){
-      rotation += (targetRotation - rotation) * 0.10;
-      layoutNodes();
-      requestAnimationFrame(animateRing);
-    }
-    animateRing();
-
-    /************************************************************
-     * CLOCK (hundredths) + countdown to next class
-     ************************************************************/
-    const dateStr = document.getElementById("dateStr");
-    const timeStr = document.getElementById("timeStr");
-    const ticksStr = document.getElementById("ticksStr");
-    const countdownBox = document.getElementById("countdownBox");
-    const countdownText = document.getElementById("countdownText");
-
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    function isoDate(d){
-      const y = d.getFullYear();
-      const m = pad2(d.getMonth()+1);
-      const da = pad2(d.getDate());
-      return `${y}-${m}-${da}`;
-    }
-
-    function tickClock(){
-      const now = new Date();
-      dateStr.textContent = isoDate(now);
-      timeStr.textContent = `${pad2(now.getHours())}:${pad2(now.getMinutes())}:${pad2(now.getSeconds())}`;
-      ticksStr.textContent = `.${pad2(Math.floor(now.getMilliseconds()/10))}`;
-      requestAnimationFrame(tickClock);
-    }
-    tickClock();
-
-    /************************************************************
-     * SCHEDULE DATA (Blue/Gold)
-     ************************************************************/
-    const blueWeek = {
-      monday: [
-        { time:"9:00-9:15", block:"Reading Period" },
-        { time:"9:15-10:10", block:"A" },
-        { time:"10:15-11:10", block:"B" },
-        { time:"11:20-12:15", block:"C" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"D" },
-        { time:"2:10-3:05", block:"E" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      tuesday: [
-        { time:"9:00-9:20", block:"Bulletin" },
-        { time:"9:20-10:15", block:"F" },
-        { time:"10:20-11:15", block:"G" },
-        { time:"11:20-12:15", block:"A" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"B" },
-        { time:"2:10-3:05", block:"C" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      wednesday: [
-        { time:"9:00-9:15", block:"Reading Period" },
-        { time:"9:15-10:10", block:"D" },
-        { time:"10:15-11:10", block:"E" },
-        { time:"11:20-12:15", block:"F" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"G" },
-        { time:"2:10-3:05", block:"A" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      thursday: [
-        { time:"9:00-9:15", block:"Reading Period" },
-        { time:"9:15-10:10", block:"B" },
-        { time:"10:15-11:10", block:"C" },
-        { time:"11:20-12:15", block:"D" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"E" },
-        { time:"2:10-3:05", block:"F" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      friday: [
-        { time:"8:00-8:50", block:"Educators’ Mtg." },
-        { time:"9:00-9:55", block:"G" },
-        { time:"10:00-10:55", block:"A" },
-        { time:"11:05-12:00", block:"B" },
-        { time:"12:00-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"C" },
-        { time:"2:10-3:05", block:"D" },
-        { time:"3:10-3:50", block:"H/X1" }
-      ]
-    };
-
-    const goldWeek = {
-      monday: [
-        { time:"9:00-9:15", block:"Reading Period" },
-        { time:"9:15-10:10", block:"E" },
-        { time:"10:15-11:10", block:"F" },
-        { time:"11:20-12:15", block:"G" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"A" },
-        { time:"2:10-3:05", block:"B" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      tuesday: [
-        { time:"9:00-9:20", block:"Bulletin" },
-        { time:"9:20-10:15", block:"C" },
-        { time:"10:20-11:15", block:"D" },
-        { time:"11:20-12:15", block:"E" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"F" },
-        { time:"2:10-3:05", block:"G" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      wednesday: [
-        { time:"9:00-9:15", block:"Reading Period" },
-        { time:"9:15-10:10", block:"A" },
-        { time:"10:15-11:10", block:"B" },
-        { time:"11:20-12:15", block:"C" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"D" },
-        { time:"2:10-3:05", block:"E" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      thursday: [
-        { time:"9:00-9:15", block:"Reading Period" },
-        { time:"9:15-10:10", block:"F" },
-        { time:"10:15-11:10", block:"G" },
-        { time:"11:20-12:15", block:"A" },
-        { time:"12:15-1:05", block:"Lunch" },
-        { time:"1:10-2:05", block:"B" },
-        { time:"2:10-3:05", block:"C" },
-        { time:"3:10-3:50", block:"H" }
-      ],
-      friday: [
-        { time:"8:00-8:50", block:"Educators’ Mtg." },
-        { time:"9:00-9:55", block:"D" },
-        { time:"10:00-10:55", block:"E" },
-        { time:"11:00-11:45", block:"H" },
-        { time:"11:45-12:35", block:"Lunch" },
-        { time:"12:40-1:35", block:"F" },
-        { time:"1:40-2:35", block:"G" },
-        { time:"2:40-3:20", block:"X3" }
-      ]
-    };
-
-    const scheduleByWeek = { blue: blueWeek, gold: goldWeek };
-    const dayKeys = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
-
-    function parseTimeToMinutes(t){
-      const [hh, mm] = t.split(":").map(Number);
-      let h = hh;
-      // treat 1–6 as PM (school schedule convention)
-      if (h >= 1 && h <= 6) h += 12;
-      return h * 60 + (mm||0);
-    }
-    function parseRange(range){
-      const parts = range.split("-");
-      if (parts.length !== 2) return null;
-      return { start: parseTimeToMinutes(parts[0].trim()), end: parseTimeToMinutes(parts[1].trim()) };
-    }
-
-    /************************************************************
-     * LOCAL STORAGE STATE (schedule + checklist + per-block links)
-     ************************************************************/
-    const LS_KEY = "geffen_cockpit_v4";
+    const LS_KEY = "geffen_cockpit_v5";
+    const nowISO = () => new Date().toISOString();
 
     const defaultState = {
-      blueAnchor: "",
-      officeHoursMode: "none",
-      blocks: { A:"",B:"",C:"",D:"",E:"",F:"",G:"",H:"" },
-      links:  { A:"",B:"",C:"",D:"",E:"",F:"",G:"",H:"" },
-      viewDate: "",
-      checklist: [], // {id, text, done, createdAt, completedAt, dueAt, priority, tags, order}
-      checklistUI: { hideDone:false, filter:"" }
+      viewDate: new Date().toISOString().slice(0,10),
+
+      // Ring links
+      links: [
+        { id: uid(), label:"Google Classroom", url:"https://classroom.google.com" },
+        { id: uid(), label:"Gmail",            url:"https://mail.google.com" },
+        { id: uid(), label:"Calendar",         url:"https://calendar.google.com" },
+        { id: uid(), label:"Drive",            url:"https://drive.google.com" },
+        { id: uid(), label:"Geffen",           url:"https://www.geffenacademy.ucla.edu/" },
+        { id: uid(), label:"Canvas",           url:"https://canvas.instructure.com/" }
+      ],
+
+      // per-day data
+      days: {
+        // "YYYY-MM-DD": { scheduleOverride:"", notes:"", checklist:[...] }
+      },
+
+      // setup
+      namedPeriods: ["B1","B2","B3","B4","Advisory","Office Hours","Prep"],
+      defaultScheduleLines: [
+        "08:30 | B1",
+        "09:45 | B2",
+        "11:00 | Office Hours",
+        "11:40 | B3",
+        "12:55 | B4",
+        "14:10 | Prep"
+      ],
+
+      // UI flags
+      editLinks: false
     };
+
+    let state = loadState();
+
+    function uid(){
+      return Math.random().toString(16).slice(2) + "-" + Math.random().toString(16).slice(2);
+    }
 
     function loadState(){
       try{
         const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return structuredClone(defaultState);
-        const obj = JSON.parse(raw);
-
-        const merged = {
-          ...structuredClone(defaultState),
-          ...obj,
-          blocks: { ...structuredClone(defaultState.blocks), ...(obj.blocks||{}) },
-          links:  { ...structuredClone(defaultState.links),  ...(obj.links||{}) },
-          checklist: Array.isArray(obj.checklist) ? obj.checklist : [],
-          checklistUI: { ...structuredClone(defaultState.checklistUI), ...(obj.checklistUI||{}) }
+        if(!raw) return JSON.parse(JSON.stringify(defaultState));
+        const parsed = JSON.parse(raw);
+        // soft-merge for forward compatibility
+        return {
+          ...JSON.parse(JSON.stringify(defaultState)),
+          ...parsed,
+          links: Array.isArray(parsed.links) && parsed.links.length ? parsed.links : defaultState.links,
+          days: parsed.days || {},
         };
-
-        // backward-compat normalize checklist items
-        merged.checklist = (merged.checklist || []).map((it, idx) => normalizeChecklistItem(it, idx));
-        return merged;
       }catch(e){
-        return structuredClone(defaultState);
+        console.warn("State load failed, using defaults", e);
+        return JSON.parse(JSON.stringify(defaultState));
       }
     }
+
     function saveState(){
       localStorage.setItem(LS_KEY, JSON.stringify(state));
     }
 
-    let state = loadState();
+    function ensureDay(dateStr){
+      if(!state.days[dateStr]){
+        state.days[dateStr] = {
+          scheduleOverride: "",
+          notes: "",
+          checklist: []
+        };
+      }else{
+        // backfill properties
+        state.days[dateStr].scheduleOverride ??= "";
+        state.days[dateStr].notes ??= "";
+        state.days[dateStr].checklist ??= [];
+      }
+      return state.days[dateStr];
+    }
 
     /************************************************************
-     * UI refs
+     * DOM
      ************************************************************/
-    const dayModePill = document.getElementById("dayModePill");
+    const ringEl = document.getElementById("ring");
+    const ringFrame = document.getElementById("ringFrame");
+
+    const pillTime = document.getElementById("pillTime");
+    const pillDow  = document.getElementById("pillDow");
+    const clockText= document.getElementById("clockText");
+    const dateText = document.getElementById("dateText");
+
     const viewDateEl = document.getElementById("viewDate");
+    const viewDateLabel = document.getElementById("viewDateLabel");
+    const checklistSub = document.getElementById("checklistSub");
 
-    const holoList = document.getElementById("holoList");
-    const holoStatus = document.getElementById("holoStatus");
-    const holoTag = document.getElementById("holoTag");
+    const miniScheduleEl = document.getElementById("miniSchedule");
+    const nextClassBox = document.getElementById("nextClassBox");
+    const nextClassName = document.getElementById("nextClassName");
+    const nextClassWhen = document.getElementById("nextClassWhen");
+    const untilLine = document.getElementById("untilLine");
 
-    const energyFill = document.getElementById("energyFill");
-    const energyPct = document.getElementById("energyPct");
-    const energyNote = document.getElementById("energyNote");
+    const checkListEl = document.getElementById("checkList");
+    const weekTasksEl = document.getElementById("weekTasks");
+    const countLine = document.getElementById("countLine");
 
-    // checklist
     const newItemText = document.getElementById("newItemText");
     const addItemBtn = document.getElementById("addItemBtn");
-    const clearCheckedBtn = document.getElementById("clearCheckedBtn");
-    const exportChecklistBtn = document.getElementById("exportChecklistBtn");
-    const checkListEl = document.getElementById("checkList");
-    const checkFilterEl = document.getElementById("checkFilter");
-    const collapseDoneBtn = document.getElementById("collapseDoneBtn");
-    const checkProgressEl = document.getElementById("checkProgress");
+    const clearDoneBtn = document.getElementById("clearDoneBtn");
+    const undoBtn = document.getElementById("undoBtn");
+
+    const openDrawerBtn = document.getElementById("openDrawerBtn");
+    const closeDrawerBtn = document.getElementById("closeDrawerBtn");
+    const drawer = document.getElementById("drawer");
+    const saveDayBtn = document.getElementById("saveDayBtn");
+    const clearDayBtn = document.getElementById("clearDayBtn");
+    const scheduleTextEl = document.getElementById("scheduleText");
+    const dayNotesEl = document.getElementById("dayNotes");
+
+    const todayBtn = document.getElementById("todayBtn");
+
+    // tabs
+    const tabs = Array.from(document.querySelectorAll(".tab"));
+    const panelChecklist = document.getElementById("panelChecklist");
+    const panelWeek = document.getElementById("panelWeek");
+    const panelSetup = document.getElementById("panelSetup");
+    const syncWeekFromScheduleBtn = document.getElementById("syncWeekFromScheduleBtn");
+
+    // setup
+    const namedPeriodsEl = document.getElementById("namedPeriods");
+    const defaultScheduleEl = document.getElementById("defaultSchedule");
+    const saveSetupBtn = document.getElementById("saveSetupBtn");
+    const resetSetupBtn = document.getElementById("resetSetupBtn");
+
+    // search
+    const googleQuery = document.getElementById("googleQuery");
+    const goSearchBtn = document.getElementById("goSearchBtn");
+
+    // context menu
+    const editLinksBtn = document.getElementById("editLinksBtn");
+    const ctx = document.getElementById("ctxMenu");
+    const ctxTitle = document.getElementById("ctxTitle");
+    const ctxLabel = document.getElementById("ctxLabel");
+    const ctxUrl = document.getElementById("ctxUrl");
+    const ctxSave = document.getElementById("ctxSave");
+    const ctxDelete = document.getElementById("ctxDelete");
+    const ctxCancel = document.getElementById("ctxCancel");
+    const ctxAdd = document.getElementById("ctxAdd");
+    let ctxTargetId = null;
+    let ctxMode = "edit"; // edit | add
+    let dragging = null;
 
     // toast
     const toast = document.getElementById("toast");
     const toastMsg = document.getElementById("toastMsg");
     const toastUndo = document.getElementById("toastUndo");
-
-    // schedule setup
-    const blueAnchorEl = document.getElementById("blueAnchor");
-    const officeHoursModeEl = document.getElementById("officeHoursMode");
-    const blockEls = ["A","B","C","D","E","F","G","H"].reduce((acc,k)=>{
-      acc[k] = document.getElementById(k);
-      return acc;
-    }, {});
-    const linkEls = ["A","B","C","D","E","F","G","H"].reduce((acc,k)=>{
-      acc[k] = document.getElementById("link"+k);
-      return acc;
-    }, {});
-    const saveScheduleBtn = document.getElementById("saveScheduleBtn");
-    const toggleSetupBtn = document.getElementById("toggleSetup");
-    const setupBody = document.getElementById("setupBody");
-
-    // export/import
-    const overlay = document.getElementById("overlay");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalHint = document.getElementById("modalHint");
-    const jsonBox = document.getElementById("jsonBox");
-    const closeModal = document.getElementById("closeModal");
-    const copyJsonBtn = document.getElementById("copyJsonBtn");
-    const applyJsonBtn = document.getElementById("applyJsonBtn");
-    const exportBtn = document.getElementById("exportBtn");
-    const importBtn = document.getElementById("importBtn");
-
-    function isValidISODate(s){
-      return /^\d{4}-\d{2}-\d{2}$/.test(s);
-    }
-
-    function hydrateSetupUI(){
-      blueAnchorEl.value = state.blueAnchor || "";
-      officeHoursModeEl.value = state.officeHoursMode || "none";
-      for (const k of Object.keys(blockEls)){
-        blockEls[k].value = state.blocks[k] || "";
-      }
-      for (const k of Object.keys(linkEls)){
-        linkEls[k].value = state.links[k] || "";
-      }
-    }
-    hydrateSetupUI();
-
-    const todayISO = isoDate(new Date());
-    if (!isValidISODate(state.viewDate)) state.viewDate = todayISO;
-    viewDateEl.value = state.viewDate;
-
-    function setViewDate(val){
-      if (!isValidISODate(val)) return;
-      state.viewDate = val;
-      saveState();
-      viewDateEl.value = val;
-      renderCenterScheduleAndTimers();
-    }
-    viewDateEl.addEventListener("change", (e)=> setViewDate(e.target.value));
-
-    saveScheduleBtn.addEventListener("click", () => {
-      state.blueAnchor = (blueAnchorEl.value || "").trim();
-      state.officeHoursMode = officeHoursModeEl.value;
-      for (const k of Object.keys(blockEls)){
-        state.blocks[k] = (blockEls[k].value || "").trim();
-      }
-      for (const k of Object.keys(linkEls)){
-        state.links[k] = (linkEls[k].value || "").trim();
-      }
-      saveState();
-      renderCenterScheduleAndTimers();
-      flashPill("Saved");
-    });
-
-    let setupCollapsed = true;
-    toggleSetupBtn.addEventListener("click", () => {
-      setupCollapsed = !setupCollapsed;
-      setupBody.style.display = setupCollapsed ? "none" : "";
-      toggleSetupBtn.textContent = setupCollapsed ? "Expand" : "Collapse";
-    });
-
-    function flashPill(msg){
-      const old = dayModePill.textContent;
-      dayModePill.textContent = msg;
-      setTimeout(()=> dayModePill.textContent = old, 900);
-    }
+    const toastClose = document.getElementById("toastClose");
+    let undoSnapshot = null;
+    let undoTimer = null;
 
     /************************************************************
-     * Checklist Phase 1 (priority, overdue, edit, delete+undo, drag reorder, tags, filter, collapse done)
+     * TOAST + UNDO
      ************************************************************/
-    function uid(){
-      return Math.random().toString(16).slice(2) + Date.now().toString(16);
-    }
-
-    function normalizeChecklistItem(it, idx){
-      const now = Date.now();
-      const base = (it && typeof it === "object") ? it : { text:String(it||"") };
-      return {
-        id: base.id || uid(),
-        text: String(base.text || ""),
-        done: !!base.done,
-        createdAt: typeof base.createdAt === "number" ? base.createdAt : now,
-        completedAt: typeof base.completedAt === "number" ? base.completedAt : (base.done ? now : null),
-        dueAt: typeof base.dueAt === "number" ? base.dueAt : null,
-        priority: !!base.priority,
-        tags: Array.isArray(base.tags) ? base.tags : [],
-     order: typeof base.order === "number"
-  ? base.order
-  : (typeof base.createdAt === "number" ? base.createdAt : (idx || 0))
-      };
-    }
-
-    // Parse #tags and due tokens from text.
-    // Due formats:
-    //   @YYYY-MM-DD
-    //   @YYYY-MM-DD HH:MM
-    //   @HH:MM  (assumes today)
-    function parseTagsAndDue(rawText){
-      let text = String(rawText || "").trim();
-
-      // tags
-      const tags = [];
-      text = text.replace(/(^|\s)#([a-zA-Z0-9_\-]+)/g, (m, sp, tag) => {
-        tags.push(tag.toLowerCase());
-        return sp;
-      }).trim();
-
-      // due tokens
-      let dueAt = null;
-
-      // @YYYY-MM-DD HH:MM
-      let m = text.match(/(^|\s)@(\d{4}-\d{2}-\d{2})\s+(\d{1,2}:\d{2})(?=\s|$)/);
-      if (m){
-        const d = m[2];
-        const t = m[3];
-        const dt = new Date(d + "T" + pad2(parseInt(t.split(":")[0],10)) + ":" + t.split(":")[1] + ":00");
-        if (!isNaN(dt.getTime())) dueAt = dt.getTime();
-        text = text.replace(m[0], m[1]).replace(/\s+/g," ").trim();
-        return { text, tags: uniq(tags), dueAt };
-      }
-
-      // @YYYY-MM-DD
-      m = text.match(/(^|\s)@(\d{4}-\d{2}-\d{2})(?=\s|$)/);
-      if (m){
-        const d = m[2];
-        const dt = new Date(d + "T23:59:00");
-        if (!isNaN(dt.getTime())) dueAt = dt.getTime();
-        text = text.replace(m[0], m[1]).replace(/\s+/g," ").trim();
-        return { text, tags: uniq(tags), dueAt };
-      }
-
-      // @HH:MM => today at that time
-      m = text.match(/(^|\s)@(\d{1,2}:\d{2})(?=\s|$)/);
-      if (m){
-        const t = m[2];
-        const now = new Date();
-        const hh = parseInt(t.split(":")[0],10);
-        const mm = parseInt(t.split(":")[1],10);
-        const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hh, mm, 0, 0);
-        if (!isNaN(dt.getTime())) dueAt = dt.getTime();
-        text = text.replace(m[0], m[1]).replace(/\s+/g," ").trim();
-      }
-
-      return { text, tags: uniq(tags), dueAt };
-    }
-
-    function uniq(arr){
-      return Array.from(new Set((arr||[]).filter(Boolean)));
-    }
-
-    function prettyDue(ts){
-      if (!ts) return "";
-      const d = new Date(ts);
-      const now = new Date();
-      const sameDay = isoDate(d) === isoDate(now);
-      const mm = pad2(d.getMonth()+1);
-      const dd = pad2(d.getDate());
-      const hh = pad2(d.getHours());
-      const mi = pad2(d.getMinutes());
-      if (sameDay) return `Due ${hh}:${mi}`;
-      return `Due ${mm}/${dd} ${hh}:${mi}`;
-    }
-
-    // Undo snapshot
-    let undoTimer = null;
-    let undoSnapshot = null;
-    function showUndo(message, snapshot){
-      undoSnapshot = snapshot;
+    function showToast(message, allowUndo=true){
       toastMsg.textContent = message;
       toast.classList.add("on");
+      toastUndo.style.display = allowUndo ? "inline-flex" : "none";
       if (undoTimer) clearTimeout(undoTimer);
       undoTimer = setTimeout(() => {
         toast.classList.remove("on");
         undoSnapshot = null;
         undoTimer = null;
-      }, 10000);
+      }, 5200);
     }
 
+    function setUndoSnapshot(){
+      undoSnapshot = snapshotState();
+    }
+
+    toastClose.addEventListener("click", () => {
+      toast.classList.remove("on");
+    });
+
+    // (You said: start from sortChecklistStable and keep going.
+    //  The lines above are included so this file runs standalone.)
     toastUndo.addEventListener("click", () => {
       if (!undoSnapshot) return;
       state = undoSnapshot;
       saveState();
       hydrateSetupUI();
       viewDateEl.value = state.viewDate;
+      renderWeekTasks();
       renderChecklist();
       renderCenterScheduleAndTimers();
       toast.classList.remove("on");
@@ -2630,1344 +1130,1104 @@
     });
 
     function snapshotState(){
-      // deep clone enough for our object
       return JSON.parse(JSON.stringify(state));
     }
 
-function sortChecklistStable(items){
-  const arr = [...items];
-
-  arr.sort((a,b) => {
-    const aHasDue = (typeof a.dueAt === "number");
-    const bHasDue = (typeof b.dueAt === "number");
-
-    // 1) Due items first
-    if (aHasDue !== bHasDue) return aHasDue ? -1 : 1;
-
-    // 2) If both have due: soonest due first
-    if (aHasDue && bHasDue){
-      if (a.dueAt !== b.dueAt) return a.dueAt - b.dueAt;
-
-      // tie-breakers inside same exact due timestamp:
-      const pa = a.priority ? 1 : 0;
-      const pb = b.priority ? 1 : 0;
-      if (pa !== pb) return pb - pa;
-
-      const oa = (typeof a.order === "number") ? a.order : a.createdAt || 0;
-      const ob = (typeof b.order === "number") ? b.order : b.createdAt || 0;
-      if (oa !== ob) return oa - ob;
-
-      return (a.createdAt || 0) - (b.createdAt || 0);
-    }
-
-    // 3) Neither has due: oldest first, newest at bottom
-    const oa = (typeof a.order === "number") ? a.order : (a.createdAt || 0);
-    const ob = (typeof b.order === "number") ? b.order : (b.createdAt || 0);
-    if (oa !== ob) return oa - ob;
-
-    return (a.createdAt || 0) - (b.createdAt || 0);
-  });
-
-  return arr;
-}
-
-    function matchesFilter(item, filter){
-      const f = (filter||"").trim().toLowerCase();
-      if (!f) return true;
-      if (f.startsWith("#")){
-        const want = f.slice(1);
-        return (item.tags || []).includes(want);
-      }
-      // allow multiple terms
-      const terms = f.split(/\s+/).filter(Boolean);
-      const hay = (item.text || "").toLowerCase() + " " + (item.tags||[]).join(" ");
-      return terms.every(t => hay.includes(t));
-    }
-
-    // Inline editor
-    function startEdit(itemId){
-      // If already editing, bail
-      const row = checkListEl.querySelector(`.checkItem[data-id="${CSS.escape(itemId)}"]`);
-      if (!row) return;
-      if (row.dataset.editing === "1") return;
-
-      const item = state.checklist.find(x => x.id === itemId);
-      if (!item) return;
-
-      row.dataset.editing = "1";
-      const txtEl = row.querySelector(".txt");
-      const chips = row.querySelector(".chipRow");
-      if (!txtEl) return;
-
-      const originalText = item.text;
-      const originalDue = item.dueAt;
-
-      const input = document.createElement("input");
-      input.className = "editInput";
-      // show due token in editor for convenience
-      const dueToken = item.dueAt ? (" @" + isoDate(new Date(item.dueAt)) + " " + pad2(new Date(item.dueAt).getHours()) + ":" + pad2(new Date(item.dueAt).getMinutes())) : "";
-      input.value = (originalText + dueToken + " " + (item.tags||[]).map(t => "#"+t).join(" ")).trim();
-      txtEl.innerHTML = "";
-      txtEl.appendChild(input);
-      if (chips) chips.style.display = "none";
-
-      const finish = (commit) => {
-        row.dataset.editing = "0";
-        if (!commit){
-          // revert
-          item.text = originalText;
-          item.dueAt = originalDue;
-          saveState();
-          renderChecklist();
-          return;
+    function sortChecklistStable(items){
+      const arr = [...items];
+      arr.sort((a,b) => {
+        const aHasDue = (typeof a.dueAt === "number");
+        const bHasDue = (typeof b.dueAt === "number");
+        if (aHasDue && bHasDue){
+          if (a.dueAt !== b.dueAt) return a.dueAt - b.dueAt;
+        } else if (aHasDue && !bHasDue){
+          return -1;
+        } else if (!aHasDue && bHasDue){
+          return 1;
         }
-        const parsed = parseTagsAndDue(input.value);
-        item.text = parsed.text || "";
-        item.tags = parsed.tags || [];
-        if (parsed.dueAt) item.dueAt = parsed.dueAt;
-        else item.dueAt = null;
-        saveState();
-        renderChecklist();
-      };
 
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter"){
-          e.preventDefault();
-          finish(true);
-        } else if (e.key === "Escape"){
-          e.preventDefault();
-          finish(false);
-        }
+        // priority: 1 (high) before 2 before 3 (default)
+        const ap = (typeof a.priority === "number" ? a.priority : 3);
+        const bp = (typeof b.priority === "number" ? b.priority : 3);
+        if (ap !== bp) return ap - bp;
+
+        // done items drift to bottom
+        const ad = !!a.done, bd = !!b.done;
+        if (ad !== bd) return ad ? 1 : -1;
+
+        // stable fallback: createdAt then id
+        const ac = (typeof a.createdAt === "number" ? a.createdAt : 0);
+        const bc = (typeof b.createdAt === "number" ? b.createdAt : 0);
+        if (ac !== bc) return ac - bc;
+
+        return String(a.id).localeCompare(String(b.id));
       });
-      input.addEventListener("blur", () => finish(true));
-
-      setTimeout(() => {
-        input.focus();
-        input.setSelectionRange(input.value.length, input.value.length);
-      }, 0);
+      return arr;
     }
 
-    function togglePriority(itemId){
-      const item = state.checklist.find(x => x.id === itemId);
-      if (!item) return;
-      item.priority = !item.priority;
-      saveState();
-      renderChecklist();
+    function flashPill(text){
+      const pill = document.getElementById("pillClock");
+      pill.classList.remove("flash");
+      void pill.offsetWidth;
+      pill.classList.add("flash");
+      showToast(text, false);
     }
 
-function setDue(itemId){
-  const item = state.checklist.find(x => x.id === itemId);
-  if (!item) return;
-
-  const cur = item.dueAt ? new Date(item.dueAt) : null;
-  const curStr = cur
-    ? `${isoDate(cur)} ${pad2(cur.getHours())}:${pad2(cur.getMinutes())}`
-    : "";
-
-  const val = prompt(
-`Set due date/time (easier formats):
-
-Examples:
-  tom
-  tom 2:30
-  3pm
-  14:30
-  fri 9
-  +2h
-  +1d
-  2026-03-01
-  2026-03-01 14:30
-
-Leave blank to clear.`,
-    curStr
-  );
-
-  if (val === null) return;
-
-  const t = String(val).trim().toLowerCase();
-  if (!t){
-    item.dueAt = null;
-    saveState();
-    renderChecklist();
-    return;
-  }
-
-  const dueAt = parseDueInput(t);
-  if (!dueAt){
-    alert("Couldn't parse that due value.\nTry: tom 2:30, 3pm, fri 9, +2h, +1d, 2026-03-01 14:30");
-    return;
-  }
-
-  item.dueAt = dueAt;
-  saveState();
-  renderChecklist();
-}
-
-
-// Flexible due parser used by setDue()
-function parseDueInput(raw){
-  const now = new Date();
-  const s = String(raw || "").trim().toLowerCase();
-
-  const dowMap = {
-    sun:0, sunday:0,
-    mon:1, monday:1,
-    tue:2, tues:2, tuesday:2,
-    wed:3, wednesday:3,
-    thu:4, thur:4, thurs:4, thursday:4,
-    fri:5, friday:5,
-    sat:6, saturday:6
-  };
-
-  function atEndOfDay(d){
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 0, 0).getTime();
-  }
-
-  function parseClock(token){
-    // 14:30, 9, 9:15, 3pm, 3:15pm, 3p
-    const m1 = token.match(/^(\d{1,2})(?::(\d{2}))?\s*(a|am|p|pm)?$/);
-    if (!m1) return null;
-
-    let hh = parseInt(m1[1], 10);
-    const mm = m1[2] ? parseInt(m1[2], 10) : 0;
-    const ap = (m1[3] || "").toLowerCase();
-
-    if (ap){
-      const isPM = ap.startsWith("p");
-      const isAM = ap.startsWith("a");
-      if (isPM && hh < 12) hh += 12;
-      if (isAM && hh === 12) hh = 0;
+    /************************************************************
+     * DATE + TIME HELPERS
+     ************************************************************/
+    function fmtDow(d){
+      return d.toLocaleDateString(undefined, { weekday:"short" });
+    }
+    function fmtDateLine(d){
+      return d.toLocaleDateString(undefined, { weekday:"long", month:"short", day:"numeric", year:"numeric" });
+    }
+    function parseScheduleLines(rawLines){
+      const lines = (rawLines || "").split("\n").map(s => s.trim()).filter(Boolean);
+      const parsed = [];
+      for (const line of lines){
+        // "08:30 | B1" or "08:30 - B1"
+        const m = line.split("|").map(s=>s.trim());
+        let t, n;
+        if (m.length >= 2){
+          t = m[0];
+          n = m.slice(1).join(" | ");
+        }else{
+          const m2 = line.split(" - ").map(s=>s.trim());
+          if (m2.length >= 2){
+            t = m2[0];
+            n = m2.slice(1).join(" - ");
+          }else{
+            t = "";
+            n = line;
+          }
+        }
+        parsed.push({ time:t, name:n });
+      }
+      return parsed;
+    }
+    function timeToMinutes(hhmm){
+      // expects "08:30" 24h
+      const m = /^(\d{1,2}):(\d{2})$/.exec((hhmm||"").trim());
+      if (!m) return null;
+      const h = Number(m[1]);
+      const mm = Number(m[2]);
+      if (Number.isNaN(h) || Number.isNaN(mm)) return null;
+      return h*60 + mm;
+    }
+    function minutesToHMM(total){
+      const h = Math.floor(total/60);
+      const m = total%60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
     }
 
-    if (hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
-    return { hh, mm };
-  }
-
-  function nextDow(targetDow){
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const curDow = d.getDay();
-    let add = (targetDow - curDow + 7) % 7;
-    if (add === 0) add = 7; // "fri" means next Friday
-    d.setDate(d.getDate() + add);
-    return d;
-  }
-
-  // Relative: +2h, +90m, +1d
-  let m = s.match(/^\+(\d+)\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours|d|day|days)$/);
-  if (m){
-    const n = parseInt(m[1], 10);
-    const unit = m[2];
-    let ms = 0;
-
-    if (unit.startsWith("m")) ms = n * 60 * 1000;
-    else if (unit.startsWith("h")) ms = n * 60 * 60 * 1000;
-    else ms = n * 24 * 60 * 60 * 1000;
-
-    return now.getTime() + ms;
-  }
-
-  // ISO date-time: YYYY-MM-DD HH:MM
-  if (/^\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2}$/.test(s)){
-    const [dpart, tpart] = s.split(/\s+/);
-    const [hh, mm] = tpart.split(":").map(x => parseInt(x, 10));
-    const dt = new Date(dpart + "T" + pad2(hh) + ":" + pad2(mm) + ":00");
-    if (!isNaN(dt.getTime())) return dt.getTime();
-  }
-
-  // ISO date only
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)){
-    const dt = new Date(s + "T23:59:00");
-    if (!isNaN(dt.getTime())) return dt.getTime();
-  }
-
-  // "tom" or "tomorrow"
-  m = s.match(/^(tom|tomorrow)(?:\s+(.+))?$/);
-  if (m){
-    const base = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    const timeToken = (m[2] || "").trim();
-
-    if (!timeToken) return atEndOfDay(base);
-
-    const clock = parseClock(timeToken);
-    if (!clock) return null;
-
-    const dt = new Date(base.getFullYear(), base.getMonth(), base.getDate(), clock.hh, clock.mm, 0, 0);
-    return dt.getTime();
-  }
-
-  // Weekday: "fri 9"
-  m = s.match(/^([a-z]+)(?:\s+(.+))?$/);
-  if (m && dowMap[m[1]] !== undefined){
-    const base = nextDow(dowMap[m[1]]);
-    const timeToken = (m[2] || "").trim();
-
-    if (!timeToken) return atEndOfDay(base);
-
-    const clock = parseClock(timeToken);
-    if (!clock) return null;
-
-    const dt = new Date(base.getFullYear(), base.getMonth(), base.getDate(), clock.hh, clock.mm, 0, 0);
-    return dt.getTime();
-  }
-
-  // Time only: 3pm, 14:30, 9
-  const clock = parseClock(s);
-  if (clock){
-    let base = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      clock.hh,
-      clock.mm,
-      0,
-      0
-    );
-
-    if (base.getTime() <= now.getTime()){
-      base = new Date(base.getTime() + 24 * 60 * 60 * 1000);
+    function getActiveScheduleForDate(dateStr){
+      const day = ensureDay(dateStr);
+      const override = (day.scheduleOverride || "").trim();
+      const raw = override ? override : (state.defaultScheduleLines || []).join("\n");
+      return parseScheduleLines(raw);
     }
 
-    return base.getTime();
-  }
-
-  return null;
-}
-
-    function deleteItem(itemId){
-      const snap = snapshotState();
-      const idx = state.checklist.findIndex(x => x.id === itemId);
-      if (idx < 0) return;
-      const label = state.checklist[idx].text || "item";
-      state.checklist.splice(idx,1);
-      saveState();
-      renderChecklist();
-      showUndo(`Deleted: ${label}`, snap);
+    function getNamedSet(){
+      return new Set((state.namedPeriods || []).map(s => String(s).trim()).filter(Boolean));
     }
 
-    // drag reorder
-    let dragId = null;
+    /************************************************************
+     * CENTER RENDER: SCHEDULE + NEXT CLASS TIMER
+     ************************************************************/
+    function renderCenterScheduleAndTimers(){
+      const d = new Date();
+      clockText.textContent = d.toLocaleTimeString(undefined, { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+      dateText.textContent = fmtDateLine(d);
+
+      const viewDate = state.viewDate;
+      viewDateLabel.textContent = viewDate;
+      checklistSub.textContent = viewDate;
+
+      const lines = getActiveScheduleForDate(viewDate);
+      const named = getNamedSet();
+
+      miniScheduleEl.innerHTML = "";
+      for (const s of lines){
+        const row = document.createElement("div");
+        row.className = "schedLine" + (named.has(s.name) ? " named" : "");
+        const t = document.createElement("div");
+        t.className = "t";
+        t.textContent = s.time || "--:--";
+        const n = document.createElement("div");
+        n.className = "n";
+        n.textContent = s.name || "";
+        row.appendChild(t);
+        row.appendChild(n);
+        miniScheduleEl.appendChild(row);
+      }
+
+      // Next class timer: only meaningful if viewing today
+      const today = new Date().toISOString().slice(0,10);
+      const isToday = (viewDate === today);
+
+      if (!isToday){
+        nextClassName.textContent = "Next:";
+        nextClassWhen.textContent = "—";
+        untilLine.textContent = "Time until next class: (view Today)";
+        nextClassBox.classList.remove("hot");
+        return;
+      }
+
+      const now = new Date();
+      const nowMin = now.getHours()*60 + now.getMinutes();
+
+      let next = null;
+      for (const s of lines){
+        const m = timeToMinutes(s.time);
+        if (m === null) continue;
+        if (m > nowMin){
+          next = { ...s, min:m };
+          break;
+        }
+      }
+
+      if (!next){
+        nextClassName.textContent = "Next:";
+        nextClassWhen.textContent = "None (day over)";
+        untilLine.textContent = "Time until next class: —";
+        nextClassBox.classList.remove("hot");
+        return;
+      }
+
+      const diff = next.min - nowMin;
+      const hrs = Math.floor(diff/60);
+      const mins = diff%60;
+
+      nextClassName.textContent = "Next:";
+      nextClassWhen.textContent = `${next.time} • ${next.name}`;
+      untilLine.textContent = `Time until next class: ${hrs ? hrs+"h " : ""}${mins}m`;
+
+      // crackle/hot styling when within 10 minutes
+      if (diff <= 10){
+        nextClassBox.classList.add("hot");
+      }else{
+        nextClassBox.classList.remove("hot");
+      }
+    }
+
+    /************************************************************
+     * CHECKLIST
+     ************************************************************/
+    function getChecklistForView(){
+      const day = ensureDay(state.viewDate);
+      return day.checklist;
+    }
+
+    function setChecklistForView(items){
+      const day = ensureDay(state.viewDate);
+      day.checklist = items;
+    }
 
     function renderChecklist(){
-      // normalize once
-      state.checklist = (state.checklist || []).map((it, idx) => normalizeChecklistItem(it, idx));
+      const items = sortChecklistStable(getChecklistForView());
+      const total = items.length;
+      const done = items.filter(i => i.done).length;
+      countLine.textContent = `${done}/${total} done`;
 
-      // persist UI state
-      if (!state.checklistUI) state.checklistUI = { hideDone:false, filter:"" };
-
-      const hideDone = !!state.checklistUI.hideDone;
-      const filter = (state.checklistUI.filter || "");
-
-      // progress
-      const total = state.checklist.length;
-      const doneCount = state.checklist.filter(i => i.done).length;
-      checkProgressEl.textContent = `${doneCount}/${total}`;
-
-      // button text
-      collapseDoneBtn.textContent = hideDone ? "Show Done" : "Hide Done";
-
-      // filter box value
-      if (checkFilterEl.value !== filter) checkFilterEl.value = filter;
-
-      // render list
       checkListEl.innerHTML = "";
+      for (const it of items){
+        const card = document.createElement("div");
+        card.className = "item";
 
-      const nowTs = Date.now();
+        const top = document.createElement("div");
+        top.className = "itemTop";
 
-      let visible = sortChecklistStable(state.checklist)
-        .filter(it => (hideDone ? !it.done : true))
-        .filter(it => matchesFilter(it, filter));
+        const chk = document.createElement("div");
+        chk.className = "chk" + (it.done ? " on" : "");
+        chk.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8.5L6.4 12L13 4.8" stroke="rgba(75,255,211,.95)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>`;
+        chk.addEventListener("click", () => {
+          setUndoSnapshot();
+          const arr = getChecklistForView().map(x => x.id === it.id ? ({...x, done: !x.done}) : x);
+          setChecklistForView(arr);
+          saveState();
+          renderChecklist();
+          showToast(it.done ? "Marked not done" : "Marked done");
+        });
 
-      if (!visible.length){
-        const empty = document.createElement("div");
-        empty.className = "tinyHint";
-        empty.textContent = total ? "No matches. Clear the filter or show done items." : "No items yet. Add one above.";
-        checkListEl.appendChild(empty);
-        return;
-      }
-
-      visible.forEach((item) => {
-        const row = document.createElement("div");
-        row.className = "checkItem" + (item.done ? " done" : "") + (item.priority ? " priority" : "");
-        row.dataset.id = item.id;
-
-             // Due-state highlighting (ADHD-friendly)
-        if (item.dueAt && !item.done){
-          const deltaMs = item.dueAt - nowTs;
-
-          if (deltaMs <= 0){
-            row.classList.add("overdue");
-          } else if (deltaMs <= 60 * 60 * 1000){
-            row.classList.add("due1h");
-          } else if (deltaMs <= 24 * 60 * 60 * 1000){
-            row.classList.add("due24");
-          }
-        }
-
-        // left side elements
-        const handle = document.createElement("div");
-        handle.className = "dragHandle";
-        handle.title = "Drag to reorder";
-        handle.draggable = true;
-
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = !!item.done;
-        cb.setAttribute("aria-label", "Toggle item");
+        const txtWrap = document.createElement("div");
+        txtWrap.className = "txtWrap";
 
         const txt = document.createElement("div");
-        txt.className = "txt";
-        txt.textContent = item.text || "";
+        txt.className = "txt" + (it.done ? " done" : "");
+        txt.textContent = it.text || "";
+        txtWrap.appendChild(txt);
 
-        // actions
-        const actions = document.createElement("div");
-        actions.className = "checkActions";
-        actions.innerHTML = `
-          <button class="iconBtn ${item.priority ? "priOn" : ""}" type="button" title="Toggle priority">★</button>
-          <button class="iconBtn" type="button" title="Set/clear due">DUE</button>
-          <button class="iconBtn" type="button" title="Edit">✎</button>
-          <button class="iconBtn danger" type="button" title="Delete">🗑</button>
-        `;
+        const meta = document.createElement("div");
+        meta.className = "metaRow";
 
-        const priBtn = actions.children[0];
-        const dueBtn = actions.children[1];
-        const editBtn = actions.children[2];
-        const delBtn = actions.children[3];
-
-        // chips row
-        const chips = document.createElement("div");
-        chips.className = "chipRow";
-        if (item.dueAt){
-          const c = document.createElement("span");
-          c.className = "chip due";
-          c.textContent = prettyDue(item.dueAt);
-          chips.appendChild(c);
-        }
-        (item.tags || []).slice(0, 6).forEach(t => {
-          const c = document.createElement("span");
-          c.className = "chip tag";
-          c.textContent = "#" + t;
-          chips.appendChild(c);
+        // priority chip
+        const pri = typeof it.priority === "number" ? it.priority : 3;
+        const priChip = document.createElement("div");
+        priChip.className = `chip pri${pri}`;
+        priChip.innerHTML = `Priority: <b>${pri}</b>`;
+        priChip.title = "Click to cycle priority";
+        priChip.style.cursor = "pointer";
+        priChip.addEventListener("click", () => {
+          setUndoSnapshot();
+          const nextP = pri === 1 ? 2 : (pri === 2 ? 3 : 1);
+          const arr = getChecklistForView().map(x => x.id === it.id ? ({...x, priority: nextP}) : x);
+          setChecklistForView(arr);
+          saveState();
+          renderChecklist();
+          showToast(`Priority → ${nextP}`);
         });
 
-        // compose row
-        const mid = document.createElement("div");
-        mid.style.flex = "1";
-        mid.style.minWidth = "0";
-        mid.appendChild(txt);
-        if (chips.childNodes.length) mid.appendChild(chips);
+        // due chip
+        const dueChip = document.createElement("div");
+        dueChip.className = "chip due";
+        dueChip.title = "Click to set/clear a due time (today)";
+        dueChip.style.cursor = "pointer";
+        if (typeof it.dueAt === "number"){
+          const d = new Date(it.dueAt);
+          const hh = d.toLocaleTimeString(undefined, { hour:"2-digit", minute:"2-digit" });
+          dueChip.innerHTML = `Due: <b>${hh}</b>`;
+          dueChip.classList.add("hot");
+        } else {
+          dueChip.innerHTML = `Due: <b>—</b>`;
+        }
+        dueChip.addEventListener("click", () => {
+          setUndoSnapshot();
+          const cur = (typeof it.dueAt === "number") ? new Date(it.dueAt) : null;
+          const guess = cur ? cur.toTimeString().slice(0,5) : "15:30";
+          const resp = prompt("Due time (HH:MM, 24h). Leave blank to clear.", guess);
+          if (resp === null) return; // cancel
+          const val = resp.trim();
+          let nextDue = null;
+          if (val){
+            const mins = timeToMinutes(val);
+            if (mins === null){
+              showToast("Invalid time. Use HH:MM (24h).", false);
+              return;
+            }
+            // dueAt stored on viewDate
+            const dt = new Date(state.viewDate + "T00:00:00");
+            dt.setMinutes(mins);
+            nextDue = dt.getTime();
+          }
+          const arr = getChecklistForView().map(x => x.id === it.id ? ({...x, dueAt: nextDue}) : x);
+          setChecklistForView(arr);
+          saveState();
+          renderChecklist();
+          showToast(nextDue ? "Due time set" : "Due cleared");
+        });
 
-        row.appendChild(handle);
-        row.appendChild(cb);
-        row.appendChild(mid);
-        row.appendChild(actions);
+        // note chip
+        const noteChip = document.createElement("div");
+        noteChip.className = "chip";
+        noteChip.title = "Click to edit note";
+        noteChip.style.cursor = "pointer";
+        const noteText = (it.note || "").trim();
+        noteChip.innerHTML = `Note: <b>${noteText ? "yes" : "—"}</b>`;
+        noteChip.addEventListener("click", () => {
+          setUndoSnapshot();
+          const resp = prompt("Note (optional):", it.note || "");
+          if (resp === null) return;
+          const arr = getChecklistForView().map(x => x.id === it.id ? ({...x, note: resp.trim()}) : x);
+          setChecklistForView(arr);
+          saveState();
+          renderChecklist();
+          showToast("Note updated");
+        });
 
-          // checkbox behavior + completion animation (no functional change)
-        cb.addEventListener("change", () => {
-          const it = state.checklist.find(x => x.id === item.id);
-          if (!it) return;
+        meta.appendChild(priChip);
+        meta.appendChild(dueChip);
+        meta.appendChild(noteChip);
 
-          // If unchecking, do it immediately (no ceremony)
-          if (!cb.checked){
-            it.done = false;
-            it.completedAt = null;
-            saveState();
-            renderChecklist();
+        // controls row
+        const controls = document.createElement("div");
+        controls.className = "controls";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "btn ghost";
+        editBtn.textContent = "Edit";
+        editBtn.addEventListener("click", () => {
+          setUndoSnapshot();
+          const resp = prompt("Edit item text:", it.text || "");
+          if (resp === null) return;
+          const val = resp.trim();
+          if (!val){
+            showToast("Empty. Use Delete to remove.", false);
             return;
           }
-
-          // Checking ON: play electric pulse on the current row, then commit state + sparks
-          // Grab rect now (before re-render)
-          const r = row.getBoundingClientRect();
-
-          // lock UI on this row briefly so it doesn't jitter
-          row.classList.add("completing");
-          cb.disabled = true;
-
-          // Commit state AFTER the pulse so it can "snap to dim" on rerender
-          setTimeout(() => {
-            it.done = true;
-            it.completedAt = Date.now();
-            saveState();
-            renderChecklist();
-
-            // After it snaps to dim, throw a few sparks around where it was
-            // (slight delay feels like "unplugged crackle")
-            setTimeout(() => {
-              spawnItemSparks({ x:r.left, y:r.top, w:r.width, h:r.height }, 3 + Math.floor(Math.random()*3));
-            }, 120);
-
-          }, 700);
-        });
-
-        // edit triggers
-        txt.addEventListener("dblclick", () => startEdit(item.id));
-        editBtn.addEventListener("click", () => startEdit(item.id));
-
-        // priority + due + delete
-        priBtn.addEventListener("click", () => togglePriority(item.id));
-        dueBtn.addEventListener("click", () => setDue(item.id));
-        delBtn.addEventListener("click", () => deleteItem(item.id));
-
-        // drag events (handle-only)
-        handle.addEventListener("dragstart", (e) => {
-          dragId = item.id;
-          try{
-            e.dataTransfer.setData("text/plain", item.id);
-          }catch(_){}
-          e.dataTransfer.effectAllowed = "move";
-        });
-
-        row.addEventListener("dragover", (e) => {
-          if (!dragId || dragId === item.id) return;
-          e.preventDefault();
-          row.classList.add("dragOver");
-          e.dataTransfer.dropEffect = "move";
-        });
-
-        row.addEventListener("dragleave", () => row.classList.remove("dragOver"));
-
-        row.addEventListener("drop", (e) => {
-          e.preventDefault();
-          row.classList.remove("dragOver");
-          const fromId = dragId;
-          const toId = item.id;
-          dragId = null;
-          if (!fromId || fromId === toId) return;
-const fromItem = state.checklist.find(x => x.id === fromId);
-const toItem = state.checklist.find(x => x.id === toId);
-if (!fromItem || !toItem) return;
-
-// Only allow manual reorder within the same bucket:
-// - both no-due, OR
-// - both due AND same exact dueAt
-const fromHasDue = typeof fromItem.dueAt === "number";
-const toHasDue = typeof toItem.dueAt === "number";
-
-if (fromHasDue !== toHasDue) return;
-if (fromHasDue && toHasDue && fromItem.dueAt !== toItem.dueAt) return;
-          const snap = snapshotState();
-
-          const listSorted = sortChecklistStable(state.checklist);
-
-          const fromIdx = listSorted.findIndex(x => x.id === fromId);
-          const toIdx = listSorted.findIndex(x => x.id === toId);
-          if (fromIdx < 0 || toIdx < 0) return;
-
-          const moved = listSorted.splice(fromIdx, 1)[0];
-          listSorted.splice(toIdx, 0, moved);
-
-          // reassign order sequentially (stable)
-          listSorted.forEach((x, i) => x.order = i);
-
-          // write back by id
-          const byId = new Map(listSorted.map(x => [x.id, x]));
-          state.checklist = state.checklist.map(x => byId.get(x.id) || x);
-
+          const arr = getChecklistForView().map(x => x.id === it.id ? ({...x, text: val}) : x);
+          setChecklistForView(arr);
           saveState();
           renderChecklist();
-          showUndo("Reordered checklist", snap);
+          showToast("Item updated");
         });
 
-        checkListEl.appendChild(row);
-      });
+        const dupBtn = document.createElement("button");
+        dupBtn.className = "btn ghost";
+        dupBtn.textContent = "Duplicate";
+        dupBtn.addEventListener("click", () => {
+          setUndoSnapshot();
+          const clone = {...it, id: uid(), done:false, createdAt: Date.now()};
+          const arr = [...getChecklistForView(), clone];
+          setChecklistForView(arr);
+          saveState();
+          renderChecklist();
+          showToast("Duplicated");
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn danger";
+        delBtn.textContent = "Delete";
+        delBtn.addEventListener("click", () => {
+          setUndoSnapshot();
+          const arr = getChecklistForView().filter(x => x.id !== it.id);
+          setChecklistForView(arr);
+          saveState();
+          renderChecklist();
+          showToast("Deleted");
+        });
+
+        controls.appendChild(editBtn);
+        controls.appendChild(dupBtn);
+        controls.appendChild(delBtn);
+
+        top.appendChild(chk);
+        top.appendChild(txtWrap);
+
+        card.appendChild(top);
+        card.appendChild(meta);
+        card.appendChild(controls);
+
+        checkListEl.appendChild(card);
+      }
     }
 
-    function addChecklistItem(rawText){
-      const t = (rawText || "").trim();
-      if (!t) return;
+    function addChecklistItem(text){
+      const val = (text || "").trim();
+      if(!val) return;
 
-      const parsed = parseTagsAndDue(t);
-      const item = normalizeChecklistItem({
+      setUndoSnapshot();
+      const arr = getChecklistForView();
+      arr.push({
         id: uid(),
-        text: parsed.text,
+        text: val,
         done: false,
-        createdAt: Date.now(),
-        completedAt: null,
-        dueAt: parsed.dueAt || null,
-        priority: false,
-        tags: parsed.tags || [],
-        order: 0
-      }, 0);
-
-// With auto-sort, we just append; sorter will place it correctly.
-// No-due items: order = createdAt => newest naturally ends up at bottom.
-// Due items: sorter moves them into the due section by dueAt.
-item.order = item.createdAt;
-
-state.checklist = [...state.checklist, item];
-saveState();
-newItemText.value = "";
-renderChecklist();
+        priority: 3,
+        dueAt: null,
+        note: "",
+        createdAt: Date.now()
+      });
+      setChecklistForView(arr);
+      saveState();
+      renderChecklist();
+      showToast("Added");
     }
 
-    addItemBtn.addEventListener("click", ()=> addChecklistItem(newItemText.value));
-    newItemText.addEventListener("keydown", (e)=>{
-      if (e.key === "Enter"){
-        e.preventDefault();
+    addItemBtn.addEventListener("click", () => addChecklistItem(newItemText.value));
+    newItemText.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
         addChecklistItem(newItemText.value);
+        newItemText.value = "";
       }
     });
 
-    clearCheckedBtn.addEventListener("click", ()=>{
-      const snap = snapshotState();
-      const before = state.checklist.length;
-      state.checklist = state.checklist.filter(it => !it.done);
-      // reindex order
-      sortChecklistStable(state.checklist).forEach((x,i)=> x.order = i);
-      saveState();
-      renderChecklist();
-      const removed = before - state.checklist.length;
-      if (removed > 0) showUndo(`Cleared ${removed} completed item${removed===1?"":"s"}`, snap);
-    });
-
-    exportChecklistBtn.addEventListener("click", () => {
-      // export only checklist (convenient)
-      openModal("exportChecklist");
-    });
-
-    // filter + collapse done
-    function setChecklistFilter(v){
-      state.checklistUI.filter = String(v||"");
-      saveState();
-      renderChecklist();
-    }
-    checkFilterEl.addEventListener("input", (e)=> setChecklistFilter(e.target.value));
-
-    collapseDoneBtn.addEventListener("click", () => {
-      state.checklistUI.hideDone = !state.checklistUI.hideDone;
-      saveState();
-      renderChecklist();
-    });
-
-    // initial hydrate UI state
-    checkFilterEl.value = state.checklistUI?.filter || "";
-    collapseDoneBtn.textContent = state.checklistUI?.hideDone ? "Show Done" : "Hide Done";
-
-    renderChecklist();
-
-    /************************************************************
-     * Blue/Gold auto mode (anchor-date based)
-     ************************************************************/
-    function getWeekModeForDate(date){
-      if (!isValidISODate(state.blueAnchor)) return null;
-      const anchor = new Date(state.blueAnchor + "T00:00:00");
-      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-      const toMonday = (x) => {
-        const dd = new Date(x.getFullYear(), x.getMonth(), x.getDate());
-        const dow = dd.getDay();
-        const diff = (dow + 6) % 7;
-        dd.setDate(dd.getDate() - diff);
-        return dd;
-      };
-
-      const aMon = toMonday(anchor);
-      const dMon = toMonday(d);
-
-      const weeksDiff = Math.round((dMon - aMon) / (7*24*60*60*1000));
-      return (weeksDiff % 2 === 0) ? "blue" : "gold";
-    }
-
-    function dayKeyFromDate(d){
-      return dayKeys[d.getDay()];
-    }
-
-function isClassBlock(block){
-  return ["A","B","C","D","E","F","G","H"].includes(block);
-}
-
-// A "listed class" is something you actually teach / need counted:
-// - A–G only if named
-// - H only if Office Hours is active for this week
-// - Reading Period only when immediately followed by a listed class
-function isListedClassPeriod(p, weekForDate){
-  if (p.block === "Reading Period") return !!p.teachReading; // set in buildPeriodsForDate
-  if (!isClassBlock(p.block)) return false;
-
-  if (p.block === "H"){
-    const mode = state.officeHoursMode || "none";
-    const hasOH =
-      (mode === "both") ||
-      (mode === "blue" && weekForDate === "blue") ||
-      (mode === "gold" && weekForDate === "gold");
-
-    return hasOH;
-  }
-
-  // A–G require a name (if no name, treat as "nothing")
-  return !!(state.blocks[p.block] && state.blocks[p.block].trim());
-}
-    function blockLabel(block, weekForDate){
-      const lunchish = [
-        "MS/US Lunch +MS/US Clubs",
-        "MS/US SuperLunch +Affinity Groups",
-        "H/X1",
-        "X3",
-        "Educators’ Mtg.",
-        "Reading Period",
-        "Bulletin"
-      ];
-      if (lunchish.includes(block)) return { label:block, named:false, blockKey:null };
-
-      if (block === "H"){
-        const mode = state.officeHoursMode || "none";
-        if ((mode === "both") ||
-            (mode === "blue" && weekForDate === "blue") ||
-            (mode === "gold" && weekForDate === "gold")){
-          return { label:"Office Hours", named:true, blockKey:"H" };
-        }
-      }
-      const hasName = !!(state.blocks[block] && state.blocks[block].trim());
-      return { label: hasName ? `${state.blocks[block]} (${block})` : block, named: hasName, blockKey:block };
-    }
-
-    function buildPeriodsForDate(dateObj){
-      const dk = dayKeyFromDate(dateObj);
-      if (dk === "sunday" || dk === "saturday") return { periods: [], week:null, day:dk };
-
-      const week = getWeekModeForDate(dateObj);
-      if (!week) return { periods: [], week:null, day:dk };
-
-      const src = scheduleByWeek[week]?.[dk] || [];
-let periods = src.map(p => {
-  const range = parseRange(p.time);
-  const meta = blockLabel(p.block, week);
-  return {
-    ...p,
-    label: meta.label,
-    named: meta.named,
-    blockKey: meta.blockKey,
-    range,
-    teachReading: false
-  };
-}).filter(p => p.range);
-
-// If Reading Period is immediately followed by a listed class, treat it as a class
-for (let i = 0; i < periods.length - 1; i++){
-  const cur = periods[i];
-  const next = periods[i+1];
-  if (cur.block === "Reading Period"){
-    // next period must be a "listed class"
-    const nextIsListed = isListedClassPeriod(next, week);
-    if (nextIsListed){
-      cur.teachReading = true;
-      cur.named = true;          // makes it highlight blue via .periodCard.named
-      cur.label = "Reading Period";
-      cur.blockKey = null;
-    }
-  }
-}
-
-return { periods, week, day:dk };
-    }
-
-    /************************************************************
-     * Center holo schedule + energy + countdown + time marker
-     ************************************************************/
-function findNextListedClass(periods, minutesNow, weekForDate){
-  let best = null;
-
-  for (const p of periods){
-    if (!p.range) continue;
-    if (!isListedClassPeriod(p, weekForDate)) continue;
-
-    if (p.range.start > minutesNow){
-      if (!best || p.range.start < best.range.start) best = p;
-    }
-  }
-  return best;
-}
-    function formatCountdown(totalSec){
-      const m = Math.floor(totalSec / 60);
-      const s = totalSec % 60;
-      return `${m}:${pad2(s)}`;
-    }
-
-    function updateCountdown(textOrNull, warn){
-      if (textOrNull === null){
-        countdownText.textContent = "—";
-        countdownBox.classList.remove("warn");
+    clearDoneBtn.addEventListener("click", () => {
+      const arr = getChecklistForView();
+      const done = arr.filter(i => i.done);
+      if (!done.length){
+        showToast("No done items to clear.", false);
         return;
       }
-      countdownText.textContent = textOrNull;
-      if (warn) countdownBox.classList.add("warn");
-      else countdownBox.classList.remove("warn");
+      setUndoSnapshot();
+      setChecklistForView(arr.filter(i => !i.done));
+      saveState();
+      renderChecklist();
+      showToast("Cleared done");
+    });
+
+    undoBtn.addEventListener("click", () => {
+      // mirror toast undo
+      toastUndo.click();
+    });
+
+    /************************************************************
+     * WEEK TASKS (simple)
+     ************************************************************/
+    function startOfWeek(dateStr){
+      const d = new Date(dateStr + "T00:00:00");
+      const day = d.getDay(); // 0 Sun..6 Sat
+      const diff = (day + 6) % 7; // Monday start
+      d.setDate(d.getDate() - diff);
+      return d;
     }
 
-    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function renderWeekTasks(){
+      weekTasksEl.innerHTML = "";
 
-    function renderCenterScheduleAndTimers(){
-      const view = new Date(state.viewDate + "T00:00:00");
-      const now = new Date();
-      const isToday = isoDate(now) === state.viewDate;
+      const start = startOfWeek(state.viewDate);
+      const blocks = [];
 
-      const { periods, week, day } = buildPeriodsForDate(view);
-      const dayName = day.charAt(0).toUpperCase() + day.slice(1);
-      const weekName = week ? week.toUpperCase() : "—";
-
-      if (!week && (day === "saturday" || day === "sunday")){
-        dayModePill.textContent = `Weekend • ${dayName}`;
-      } else if (!week){
-        dayModePill.textContent = `Auto needs anchor`;
-      } else {
-        dayModePill.textContent = `${weekName} • ${dayName}`;
+      for(let i=0;i<7;i++){
+        const d = new Date(start);
+        d.setDate(start.getDate()+i);
+        const ds = d.toISOString().slice(0,10);
+        const day = ensureDay(ds);
+        const sched = getActiveScheduleForDate(ds);
+        const preview = sched.slice(0,5).map(x => `${x.time} ${x.name}`).join(" • ");
+        blocks.push({ ds, d, day, preview });
       }
 
-      const minutesNow = now.getHours()*60 + now.getMinutes() + now.getSeconds()/60;
-
-      holoTag.textContent = `Daily Schedule • ${state.viewDate}`;
-      holoStatus.textContent = week ? `${weekName} • ${dayName}` : (dayName);
-
-      // Default: hide time marker unless today & schedule present
-
-      if (!periods.length){
-        holoList.innerHTML = `
-          <div class="periodCard misc">
-            <div class="t">—</div>
-            <div class="lbl">${(day==="saturday"||day==="sunday") ? "Weekend." : "Set Blue anchor date + save block names (and links, if you want)."} </div>
-          </div>
-        `;
-        energyFill.style.width = "0%";
-        energyPct.textContent = "0%";
-        energyNote.textContent = (day==="saturday"||day==="sunday") ? "Standby" : "Awaiting schedule…";
-        updateCountdown(null, false);
-        return;
-      }
-
-      // render block-cards
-      holoList.innerHTML = "";
-      const maxShow = Math.min(periods.length, 12);
-      for (let i=0; i<maxShow; i++){
-        const p = periods[i];
-        const isNow = isToday && (minutesNow >= p.range.start && minutesNow < p.range.end);
-
+      for(const b of blocks){
         const card = document.createElement("div");
-        const isMisc = !isClassBlock(p.block) && !(p.block === "Reading Period" && p.teachReading);
-        const named = !!p.named;
+        card.className = "item";
 
-card.className = "periodCard"
-  + (isMisc ? " misc" : "")
-  + (named ? " named" : "")
-  + (isNow ? " now" : "");
-        const link = (p.blockKey && (state.links[p.blockKey] || "").trim()) || "";
-        const safeLabel = escapeHtml(p.label);
-        const safeTime = escapeHtml(p.time);
+        const head = document.createElement("div");
+        head.className = "sectionTitle";
+        head.style.margin = "0 0 8px";
+        head.innerHTML = `<span>${fmtDow(b.d)} • ${b.ds}</span><span class="muted">${(b.day.checklist||[]).length} items</span>`;
 
-        let labelHTML = safeLabel;
+        const line = document.createElement("div");
+        line.className = "small";
+        line.textContent = (b.preview || "No schedule lines.");
 
-        if (!isMisc && named && link){
-          // clickable named class period
-          labelHTML = `
-            <a class="periodLink" href="${escapeHtml(link)}" target="_blank" rel="noopener">
-              <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${safeLabel}</span>
-              <span class="linkBadge">OPEN</span>
-            </a>
-          `;
-        }
+        const notes = document.createElement("div");
+        notes.className = "small";
+        notes.style.marginTop = "8px";
+        notes.textContent = b.day.notes ? `Notes: ${b.day.notes}` : "Notes: —";
 
-        card.innerHTML = `
-          <div class="t">${safeTime}</div>
-          <div class="lbl">${labelHTML}</div>
-        `;
+        const btns = document.createElement("div");
+        btns.className = "addRow";
+        btns.style.marginTop = "10px";
 
-        holoList.appendChild(card);
-      }
+        const jump = document.createElement("button");
+        jump.className = "btn ghost";
+        jump.textContent = "View";
+        jump.addEventListener("click", () => {
+          state.viewDate = b.ds;
+          saveState();
+          viewDateEl.value = state.viewDate;
+          hydrateDrawerUI();
+          renderCenterScheduleAndTimers();
+          renderChecklist();
+          renderWeekTasks();
+          flashPill("Viewing " + b.ds);
+        });
 
-      // Energy + countdown (only for today)
-      if (!isToday){
-        energyFill.style.width = "0%";
-        energyPct.textContent = "—";
-        energyNote.textContent = "Energy grid is live only for today";
-        updateCountdown("—", false);
-        return;
-      }
+        const add = document.createElement("button");
+        add.className = "btn";
+        add.textContent = "Add checklist item";
+        add.addEventListener("click", () => {
+          const resp = prompt(`Add checklist item for ${b.ds}:`, "");
+          if (resp === null) return;
+          const val = resp.trim();
+          if(!val) return;
+          setUndoSnapshot();
+          ensureDay(b.ds).checklist.push({
+            id: uid(),
+            text: val,
+            done: false,
+            priority: 3,
+            dueAt: null,
+            note: "",
+            createdAt: Date.now()
+          });
+          saveState();
+          renderWeekTasks();
+          if (state.viewDate === b.ds) renderChecklist();
+          showToast("Added to " + b.ds);
+        });
 
-      const lastEnd = Math.max(...periods.map(p => p.range.end));
-      const firstStart = Math.min(...periods.map(p => p.range.start));
-      const clamped = clamp(minutesNow, firstStart, lastEnd);
-      const prog = (clamped - firstStart) / (lastEnd - firstStart);
-      const pct = Math.round(prog * 100);
+        btns.appendChild(jump);
+        btns.appendChild(add);
 
-      energyFill.style.width = `${pct}%`;
-// Pulse speed: constant 3 seconds, regardless of fill %
-energyFill.style.setProperty("--pulseDur", `3s`);
-      energyPct.textContent = `${pct}%`;
+        card.appendChild(head);
+        card.appendChild(line);
+        card.appendChild(notes);
+        card.appendChild(btns);
 
-      if (minutesNow < firstStart) energyNote.textContent = "Pre-start";
-      else if (minutesNow >= lastEnd) energyNote.textContent = "Complete";
-      else energyNote.textContent = "In progress";
-
-      const next = findNextListedClass(periods, minutesNow, week);
-      if (!next){
-        updateCountdown("No more classes", false);
-      } else {
-        const deltaSec = Math.max(0, Math.round((next.range.start - minutesNow) * 60));
-        const warn = deltaSec > 0 && deltaSec <= 600; // <= 10 minutes
-        updateCountdown(formatCountdown(deltaSec), warn);
+        weekTasksEl.appendChild(card);
       }
     }
-    setInterval(renderCenterScheduleAndTimers, 700);
-    renderCenterScheduleAndTimers();
+
+    syncWeekFromScheduleBtn.addEventListener("click", () => {
+      showToast("This button is a placeholder for your future “auto-generate tasks” logic.", false);
+    });
 
     /************************************************************
-     * Export / Import JSON (schedule + checklist + links)
+     * DRAWER (calendar)
      ************************************************************/
-    function openModal(mode){
-      overlay.style.display = "flex";
-
-      if (mode === "export"){
-        modalTitle.textContent = "Export";
-        modalHint.textContent = "Copy this JSON to move your schedule + links + checklist to another computer.";
-        jsonBox.value = JSON.stringify(state, null, 2);
-        applyJsonBtn.style.display = "none";
-        jsonBox.readOnly = true;
-        return;
-      }
-
-      if (mode === "exportChecklist"){
-        modalTitle.textContent = "Export Checklist";
-        modalHint.textContent = "Copy this JSON if you only want to move the checklist.";
-        jsonBox.value = JSON.stringify({ checklist: state.checklist }, null, 2);
-        applyJsonBtn.style.display = "none";
-        jsonBox.readOnly = true;
-        return;
-      }
-
-      modalTitle.textContent = "Import";
-      modalHint.textContent = "Paste JSON exported from this dashboard and click Apply.";
-      jsonBox.value = "";
-      applyJsonBtn.style.display = "";
-      jsonBox.readOnly = false;
+    function openDrawer(){
+      drawer.classList.add("on");
+      hydrateDrawerUI();
     }
-    function closeModalFn(){ overlay.style.display = "none"; }
+    function closeDrawer(){
+      drawer.classList.remove("on");
+    }
 
-    exportBtn.addEventListener("click", () => openModal("export"));
-    importBtn.addEventListener("click", () => openModal("import"));
-    closeModal.addEventListener("click", closeModalFn);
-    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModalFn(); });
+    openDrawerBtn.addEventListener("click", openDrawer);
+    closeDrawerBtn.addEventListener("click", closeDrawer);
 
-    copyJsonBtn.addEventListener("click", async () => {
-      try{
-        await navigator.clipboard.writeText(jsonBox.value);
-        flashPill("Copied");
-      }catch(e){
-        jsonBox.select();
-        document.execCommand("copy");
-        flashPill("Copied");
+    function hydrateDrawerUI(){
+      viewDateEl.value = state.viewDate;
+      const day = ensureDay(state.viewDate);
+      scheduleTextEl.value = day.scheduleOverride || "";
+      dayNotesEl.value = day.notes || "";
+    }
+
+    viewDateEl.addEventListener("change", () => {
+      const val = viewDateEl.value;
+      if(!val) return;
+      state.viewDate = val;
+      ensureDay(val);
+      saveState();
+      hydrateDrawerUI();
+      renderCenterScheduleAndTimers();
+      renderChecklist();
+      renderWeekTasks();
+      showToast("Viewing " + val, false);
+    });
+
+    saveDayBtn.addEventListener("click", () => {
+      setUndoSnapshot();
+      const day = ensureDay(state.viewDate);
+      day.scheduleOverride = scheduleTextEl.value || "";
+      day.notes = dayNotesEl.value || "";
+      saveState();
+      renderCenterScheduleAndTimers();
+      renderWeekTasks();
+      showToast("Day saved");
+    });
+
+    clearDayBtn.addEventListener("click", () => {
+      setUndoSnapshot();
+      const day = ensureDay(state.viewDate);
+      day.scheduleOverride = "";
+      saveState();
+      hydrateDrawerUI();
+      renderCenterScheduleAndTimers();
+      renderWeekTasks();
+      showToast("Override cleared");
+    });
+
+    todayBtn.addEventListener("click", () => {
+      const t = new Date().toISOString().slice(0,10);
+      state.viewDate = t;
+      ensureDay(t);
+      saveState();
+      viewDateEl.value = t;
+      hydrateDrawerUI();
+      renderCenterScheduleAndTimers();
+      renderChecklist();
+      renderWeekTasks();
+      flashPill("Today");
+    });
+
+    // Escape closes drawer/context menu
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape"){
+        closeDrawer();
+        closeCtx();
       }
     });
 
-    applyJsonBtn.addEventListener("click", () => {
-      try{
-        const obj = JSON.parse(jsonBox.value);
-        if (typeof obj !== "object" || !obj) throw new Error("Invalid JSON");
+    /************************************************************
+     * SETUP PANEL
+     ************************************************************/
+    function hydrateSetupUI(){
+      namedPeriodsEl.value = (state.namedPeriods || []).join(", ");
+      defaultScheduleEl.value = (state.defaultScheduleLines || []).join("\n");
+    }
 
-        // Allow importing a checklist-only file as a convenience
-        if (obj.checklist && !obj.blocks && !obj.blueAnchor && !obj.links){
-          state.checklist = Array.isArray(obj.checklist) ? obj.checklist.map((it, idx)=> normalizeChecklistItem(it, idx)) : [];
-          saveState();
-          renderChecklist();
-          renderCenterScheduleAndTimers();
-          closeModalFn();
-          flashPill("Imported");
+    saveSetupBtn.addEventListener("click", () => {
+      setUndoSnapshot();
+      const named = namedPeriodsEl.value.split(",").map(s=>s.trim()).filter(Boolean);
+      const lines = defaultScheduleEl.value.split("\n").map(s=>s.trim()).filter(Boolean);
+      state.namedPeriods = named;
+      state.defaultScheduleLines = lines.length ? lines : defaultState.defaultScheduleLines.slice();
+      saveState();
+      renderCenterScheduleAndTimers();
+      renderWeekTasks();
+      showToast("Setup saved");
+    });
+
+    resetSetupBtn.addEventListener("click", () => {
+      setUndoSnapshot();
+      state.namedPeriods = defaultState.namedPeriods.slice();
+      state.defaultScheduleLines = defaultState.defaultScheduleLines.slice();
+      saveState();
+      hydrateSetupUI();
+      renderCenterScheduleAndTimers();
+      renderWeekTasks();
+      showToast("Setup reset");
+    });
+
+    /************************************************************
+     * TABS
+     ************************************************************/
+    function setTab(which){
+      tabs.forEach(t => t.classList.toggle("on", t.dataset.tab === which));
+      panelChecklist.style.display = (which === "checklist") ? "" : "none";
+      panelWeek.style.display = (which === "week") ? "" : "none";
+      panelSetup.style.display = (which === "setup") ? "" : "none";
+    }
+    tabs.forEach(t => t.addEventListener("click", () => setTab(t.dataset.tab)));
+
+    /************************************************************
+     * SEARCH
+     ************************************************************/
+    function doSearch(){
+      const q = (googleQuery.value || "").trim();
+      if(!q) return;
+      const url = "https://www.google.com/search?q=" + encodeURIComponent(q);
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+    goSearchBtn.addEventListener("click", doSearch);
+    googleQuery.addEventListener("keydown", (e) => {
+      if(e.key === "Enter") doSearch();
+    });
+
+    /************************************************************
+     * RING LINKS: LAYOUT + EDIT + REORDER
+     ************************************************************/
+    function ringNodeSize(n){
+      // fewer nodes → larger, more nodes → smaller
+      // clamp in a pleasant range
+      const size = Math.round(120 - Math.min(60, (n-6)*7));
+      return Math.max(58, Math.min(110, size));
+    }
+
+    function ringRadius(){
+      // based on ring frame size
+      const rect = ringFrame.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      const min = Math.min(w,h);
+      // leave safe margin for node size and center box
+      return Math.max(160, Math.floor(min/2 - 86));
+    }
+
+    function renderRing(){
+      ringEl.innerHTML = "";
+      const links = state.links || [];
+      const n = links.length;
+      const size = ringNodeSize(n);
+      const r = ringRadius();
+
+      // center box shrink when too crowded
+      const centerW = Math.round(Math.max(220, Math.min(300, 320 - (n-6)*8)));
+      const centerH = Math.round(Math.max(200, Math.min(260, 260 - (n-6)*6)));
+      document.documentElement.style.setProperty("--centerBoxW", centerW + "px");
+      document.documentElement.style.setProperty("--centerBoxH", centerH + "px");
+
+      // position around circle
+      for(let i=0;i<n;i++){
+        const link = links[i];
+        const angle = (Math.PI * 2) * (i / n) - Math.PI/2;
+        const x = Math.cos(angle) * r;
+        const y = Math.sin(angle) * r;
+
+        const node = document.createElement("div");
+        node.className = "node";
+        node.dataset.id = link.id;
+        node.style.width = size + "px";
+        node.style.height = size + "px";
+        node.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+
+        node.innerHTML = `<div class="label">${escapeHtml(link.label || "Link")}${link.url ? `<span class="sub">${shortHost(link.url)}</span>` : ""}</div>`;
+
+        node.addEventListener("click", (e) => {
+          if (state.editLinks){
+            // in edit mode, click opens editor (not navigate)
+            openCtxFor(link.id, e.clientX, e.clientY);
+            return;
+          }
+          if (link.url) window.open(link.url, "_blank", "noopener,noreferrer");
+        });
+
+        node.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          openCtxFor(link.id, e.clientX, e.clientY);
+        });
+
+        // drag to reorder when editLinks enabled
+        node.addEventListener("pointerdown", (e) => {
+          if (!state.editLinks) return;
+          dragging = { id: link.id, startX: e.clientX, startY: e.clientY };
+          node.setPointerCapture(e.pointerId);
+        });
+
+        node.addEventListener("pointermove", (e) => {
+          if (!dragging || dragging.id !== link.id) return;
+          // find nearest slot by angle
+          const rect = ringFrame.getBoundingClientRect();
+          const cx = rect.left + rect.width/2;
+          const cy = rect.top + rect.height/2;
+          const dx = e.clientX - cx;
+          const dy = e.clientY - cy;
+          const ang = Math.atan2(dy, dx) + Math.PI/2;
+          const norm = (ang < 0) ? ang + Math.PI*2 : ang;
+          const idx = Math.round((norm / (Math.PI*2)) * n) % n;
+
+          const curIdx = state.links.findIndex(x => x.id === link.id);
+          if (idx !== curIdx && idx >= 0){
+            setUndoSnapshot();
+            const arr = [...state.links];
+            const [moved] = arr.splice(curIdx, 1);
+            arr.splice(idx, 0, moved);
+            state.links = arr;
+            saveState();
+            renderRing();
+          }
+        });
+
+        node.addEventListener("pointerup", (e) => {
+          if (!dragging) return;
+          dragging = null;
+        });
+
+        ringEl.appendChild(node);
+      }
+    }
+
+    function shortHost(url){
+      try{
+        const u = new URL(url);
+        return u.host.replace(/^www\./,"");
+      }catch(e){
+        return "";
+      }
+    }
+
+    function escapeHtml(s){
+      return String(s||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+    }
+
+    function openCtxFor(id, x, y){
+      ctxTargetId = id;
+      ctxMode = "edit";
+      const link = state.links.find(l => l.id === id);
+      ctxTitle.textContent = "Edit link";
+      ctxLabel.value = link?.label || "";
+      ctxUrl.value = link?.url || "";
+      ctxDelete.style.display = "";
+      ctxAdd.textContent = "Add new";
+      positionCtx(x,y);
+      ctx.classList.add("on");
+    }
+
+    function openCtxAdd(x, y){
+      ctxTargetId = null;
+      ctxMode = "add";
+      ctxTitle.textContent = "Add link";
+      ctxLabel.value = "";
+      ctxUrl.value = "";
+      ctxDelete.style.display = "none";
+      ctxAdd.textContent = "Add";
+      positionCtx(x,y);
+      ctx.classList.add("on");
+    }
+
+    function positionCtx(x,y){
+      const pad = 14;
+      const w = 260;
+      const h = 240;
+      let left = x + 10;
+      let top = y + 10;
+      if (left + w > window.innerWidth - pad) left = window.innerWidth - w - pad;
+      if (top + h > window.innerHeight - pad) top = window.innerHeight - h - pad;
+      ctx.style.left = left + "px";
+      ctx.style.top = top + "px";
+    }
+
+    function closeCtx(){
+      ctx.classList.remove("on");
+      ctxTargetId = null;
+      ctxMode = "edit";
+    }
+
+    ctxCancel.addEventListener("click", closeCtx);
+
+    ctxSave.addEventListener("click", () => {
+      const label = ctxLabel.value.trim();
+      const url = ctxUrl.value.trim();
+      if (ctxMode === "add"){
+        if(!label || !url){
+          showToast("Label + URL required.", false);
           return;
         }
-
-        state = {
-          ...structuredClone(defaultState),
-          ...obj,
-          blocks: { ...structuredClone(defaultState.blocks), ...(obj.blocks||{}) },
-          links:  { ...structuredClone(defaultState.links),  ...(obj.links||{}) },
-          checklist: Array.isArray(obj.checklist) ? obj.checklist.map((it, idx)=> normalizeChecklistItem(it, idx)) : [],
-          checklistUI: { ...structuredClone(defaultState.checklistUI), ...(obj.checklistUI||{}) }
-        };
-
-        if (!isValidISODate(state.viewDate)) state.viewDate = isoDate(new Date());
+        setUndoSnapshot();
+        state.links.push({ id: uid(), label, url });
         saveState();
-        hydrateSetupUI();
-        viewDateEl.value = state.viewDate;
-        renderChecklist();
-        renderCenterScheduleAndTimers();
-        closeModalFn();
-        flashPill("Imported");
-      }catch(e){
-        alert("Import failed. Make sure you pasted valid JSON exported from this dashboard.");
+        renderRing();
+        closeCtx();
+        showToast("Link added");
+        return;
+      }
+
+      if(!ctxTargetId) return;
+      setUndoSnapshot();
+      state.links = state.links.map(l => l.id === ctxTargetId ? ({...l, label: label || "Link", url}) : l);
+      saveState();
+      renderRing();
+      closeCtx();
+      showToast("Link saved");
+    });
+
+    ctxDelete.addEventListener("click", () => {
+      if(!ctxTargetId) return;
+      if(!confirm("Delete this link?")) return;
+      setUndoSnapshot();
+      state.links = state.links.filter(l => l.id !== ctxTargetId);
+      saveState();
+      renderRing();
+      closeCtx();
+      showToast("Link deleted");
+    });
+
+    ctxAdd.addEventListener("click", (e) => {
+      if (ctxMode === "add"){
+        ctxSave.click();
+      }else{
+        // open add mode near menu
+        const rect = ctx.getBoundingClientRect();
+        openCtxAdd(rect.left + 20, rect.top + 20);
       }
     });
 
-    /************************************************************
-     * Google search focus with /
-     ************************************************************/
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "/" && document.activeElement !== document.getElementById("googleQ")){
-        e.preventDefault();
-        document.getElementById("googleQ").focus();
+    editLinksBtn.addEventListener("click", () => {
+      state.editLinks = !state.editLinks;
+      saveState();
+      editLinksBtn.textContent = state.editLinks ? "Done Editing" : "Edit Links";
+      flashPill(state.editLinks ? "Edit mode" : "Locked");
+      if (state.editLinks){
+        const rect = ringFrame.getBoundingClientRect();
+        openCtxAdd(rect.left + rect.width - 60, rect.top + 60);
+      }else{
+        closeCtx();
       }
     });
 
-    /************************************************************
-     * Resize relayout for ring + canvases
-     ************************************************************/
+    window.addEventListener("click", (e) => {
+      // close ctx if click outside
+      if (ctx.classList.contains("on")){
+        const inside = ctx.contains(e.target);
+        if (!inside) closeCtx();
+      }
+    }, true);
+
     window.addEventListener("resize", () => {
-      layoutNodes();
-      resizeMatrix();
-      resizeLightning();
+      renderRing();
+      renderCenterScheduleAndTimers();
     });
 
     /************************************************************
-     * MATRIX / ELECTRIC CASCADE BACKGROUND (canvas)
+     * FX: STARFIELD + ELECTRIC ARCS
      ************************************************************/
-    const matrixCanvas = document.getElementById("matrixBg");
-    const mtx = matrixCanvas.getContext("2d", { alpha:true });
+    const stars = document.getElementById("stars");
+    const arcs = document.getElementById("arcs");
+    const sctx = stars.getContext("2d");
+    const actx = arcs.getContext("2d");
+    let fxRunning = true;
 
-    let matrixCols = [];
-    let matrixW = 0, matrixH = 0, matrixDPR = 1;
-    let matrixFontPx = 14;
-    let matrixStep = 16;
+    function resizeFx(){
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      stars.width = Math.floor(w*dpr);
+      stars.height= Math.floor(h*dpr);
+      stars.style.width = w+"px";
+      stars.style.height= h+"px";
 
-    // “Electric drops”: mix sparse glyphs + droplet chars
-    const glyphs = "01░▒▓╌╎╍╏┆┇┊┋⋮⋯⟡⟢⟣⟠⟟⟞·";
-    function randGlyph(){
-      return glyphs[Math.floor(Math.random() * glyphs.length)];
+      arcs.width = Math.floor(w*dpr);
+      arcs.height= Math.floor(h*dpr);
+      arcs.style.width = w+"px";
+      arcs.style.height= h+"px";
+
+      sctx.setTransform(dpr,0,0,dpr,0,0);
+      actx.setTransform(dpr,0,0,dpr,0,0);
+
+      // init stars
+      starField = makeStars(180, w, h);
     }
 
-    function resizeMatrix(){
-      matrixDPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      matrixW = Math.floor(window.innerWidth);
-      matrixH = Math.floor(window.innerHeight);
-      matrixCanvas.width = Math.floor(matrixW * matrixDPR);
-      matrixCanvas.height = Math.floor(matrixH * matrixDPR);
-      matrixCanvas.style.width = matrixW + "px";
-      matrixCanvas.style.height = matrixH + "px";
-
-      mtx.setTransform(matrixDPR,0,0,matrixDPR,0,0);
-
-      // responsive sizing
-      matrixFontPx = Math.max(12, Math.min(16, Math.floor(matrixW / 90)));
-      matrixStep = Math.floor(matrixFontPx * 1.25);
-
-      const cols = Math.floor(matrixW / matrixStep);
-      matrixCols = new Array(cols).fill(0).map(() => ({
-        y: Math.random() * matrixH,
-        speed: 0.7 + Math.random() * 1.8,
-        density: 0.08 + Math.random() * 0.22,
-        glow: 0.08 + Math.random() * 0.20
-      }));
-      mtx.font = `${matrixFontPx}px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace`;
-    }
-
-    function stepMatrix(){
-      // fade with slight tint
-      mtx.fillStyle = "rgba(7, 11, 26, 0.08)";
-      mtx.fillRect(0,0,matrixW,matrixH);
-
-      for (let i=0; i<matrixCols.length; i++){
-        const col = matrixCols[i];
-        const x = i * matrixStep;
-
-        // occasionally skip drawing to keep it subtle
-        if (Math.random() > col.density) continue;
-
-        const ch = randGlyph();
-        const y = col.y;
-
-        // glow layer
-        mtx.shadowBlur = 14;
-        mtx.shadowColor = `rgba(45,125,255,${0.22 + col.glow})`;
-        mtx.fillStyle = `rgba(123,231,255,${0.18 + col.glow})`;
-        mtx.fillText(ch, x, y);
-
-        // bright core
-        mtx.shadowBlur = 0;
-        mtx.fillStyle = `rgba(75,255,211,${0.07 + col.glow * 0.7})`;
-        mtx.fillText(ch, x, y);
-
-        col.y += col.speed * matrixStep * 0.22;
-
-        if (col.y > matrixH + 50){
-          col.y = -Math.random() * 200;
-          col.speed = 0.7 + Math.random() * 1.8;
-          col.density = 0.08 + Math.random() * 0.22;
-          col.glow = 0.08 + Math.random() * 0.20;
-        }
-      }
-      requestAnimationFrame(stepMatrix);
-    }
-
-    resizeMatrix();
-    stepMatrix();
-
-    /************************************************************
-     * ELECTRIC LIGHTNING (canvas overlay)
-     * - periodic, semi-random “real” bolts along console borders
-     * - sometimes around ring/search for atmosphere
-     ************************************************************/
-    const fxCanvas = document.getElementById("fxLightning");
-    const fx = fxCanvas.getContext("2d", { alpha:true });
-
-    let fxW=0, fxH=0, fxDPR=1;
-    function resizeLightning(){
-      fxDPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      fxW = window.innerWidth;
-      fxH = window.innerHeight;
-      fxCanvas.width = Math.floor(fxW * fxDPR);
-      fxCanvas.height = Math.floor(fxH * fxDPR);
-      fxCanvas.style.width = fxW + "px";
-      fxCanvas.style.height = fxH + "px";
-      fx.setTransform(fxDPR,0,0,fxDPR,0,0);
-    }
-    resizeLightning();
-
-    function rectOf(el){
-      const r = el.getBoundingClientRect();
-      return { x:r.left, y:r.top, w:r.width, h:r.height };
-    }
-
-    function jitter(n, amt){ return n + (Math.random()*2-1)*amt; }
-
-    function makeBolt(x0,y0,x1,y1,segments=16,spread=18){
-      const pts = [];
-      for (let i=0;i<=segments;i++){
-        const t = i/segments;
-        const x = x0 + (x1-x0)*t;
-        const y = y0 + (y1-y0)*t;
-        // perpendicular jitter
-        const dx = x1-x0, dy = y1-y0;
-        const len = Math.hypot(dx,dy) || 1;
-        const px = -dy/len, py = dx/len;
-        const amp = (1 - Math.abs(0.5 - t)*2) * spread; // bigger in middle
-        pts.push({
-          x: jitter(x + px * (Math.random()*2-1) * amp, 1.8),
-          y: jitter(y + py * (Math.random()*2-1) * amp, 1.8)
+    function makeStars(n,w,h){
+      const arr = [];
+      for(let i=0;i<n;i++){
+        arr.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          z: 0.3 + Math.random()*0.9,
+          r: 0.4 + Math.random()*1.6,
+          tw: Math.random()*Math.PI*2
         });
       }
-      return pts;
+      return arr;
     }
 
-    function branchFrom(pts, branchChance=0.25){
-      // pick a mid point, branch outward
-      if (Math.random() > branchChance) return null;
-      const idx = Math.floor(pts.length * (0.35 + Math.random()*0.4));
-      const p = pts[idx];
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 40 + Math.random()*90;
-      const x1 = p.x + Math.cos(angle)*dist;
-      const y1 = p.y + Math.sin(angle)*dist;
-      return makeBolt(p.x,p.y,x1,y1, 8+Math.floor(Math.random()*6), 10+Math.random()*10);
+    let starField = [];
+    let lastFx = 0;
+
+    function drawFx(ts){
+      if (!fxRunning){ lastFx = ts; requestAnimationFrame(drawFx); return; }
+      const dt = Math.min(50, ts - lastFx);
+      lastFx = ts;
+
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+
+      // starfield
+      sctx.clearRect(0,0,w,h);
+      for(const s of starField){
+        s.x -= 0.02 * dt * s.z;
+        s.y += 0.01 * dt * s.z;
+        if (s.x < -10) s.x = w+10;
+        if (s.y > h+10) s.y = -10;
+        s.tw += 0.002*dt*(0.7+s.z);
+
+        const a = 0.22 + 0.30*(0.5+0.5*Math.sin(s.tw));
+        sctx.beginPath();
+        sctx.fillStyle = `rgba(234,240,255,${a*s.z})`;
+        sctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        sctx.fill();
+      }
+
+      // arcs (occasional crackle)
+      actx.clearRect(0,0,w,h);
+
+      // very occasional: arcs around ringFrame border + search bar
+      if (Math.random() < 0.04){
+        crackleRect(actx, ringFrame.getBoundingClientRect(), 2 + Math.random()*2);
+      }
+      if (Math.random() < 0.025){
+        const sr = document.querySelector(".search").getBoundingClientRect();
+        crackleRect(actx, sr, 1.6 + Math.random()*1.6);
+      }
+      if (Math.random() < 0.02){
+        const lr = document.querySelector(".left").getBoundingClientRect();
+        crackleEdge(actx, lr, "bottom");
+      }
+      // if next class is soon: more arcs on the nextClass box
+      const hot = nextClassBox.classList.contains("hot");
+      if (hot && Math.random() < 0.10){
+        crackleRect(actx, nextClassBox.getBoundingClientRect(), 1.8 + Math.random()*1.8);
+      }
+
+      requestAnimationFrame(drawFx);
     }
 
-    const bolts = []; // {pts, born, life, w, alpha, branches:[pts...]}
-        // Spark a few tiny bolts around a rectangular UI element
-    function spawnItemSparks(rect, count=3){
-      // rect: {x,y,w,h} in viewport coords
+    function crackleRect(ctx, rect, intensity=2){
       const pad = 6;
-      const x0 = rect.x - pad;
-      const y0 = rect.y - pad;
-      const x1 = rect.x + rect.w + pad;
-      const y1 = rect.y + rect.h + pad;
-
-      for (let i=0;i<count;i++){
-        const edge = ["top","right","bottom","left"][Math.floor(Math.random()*4)];
-        let sx, sy, ex, ey;
-
-        if (edge === "top"){
-          sx = x0 + Math.random()*(x1-x0);
-          sy = y0;
-          ex = sx + (Math.random()*2-1)*(40 + Math.random()*60);
-          ey = sy + (10 + Math.random()*18);
-        } else if (edge === "bottom"){
-          sx = x0 + Math.random()*(x1-x0);
-          sy = y1;
-          ex = sx + (Math.random()*2-1)*(40 + Math.random()*60);
-          ey = sy - (10 + Math.random()*18);
-        } else if (edge === "left"){
-          sx = x0;
-          sy = y0 + Math.random()*(y1-y0);
-          ex = sx + (10 + Math.random()*18);
-          ey = sy + (Math.random()*2-1)*(40 + Math.random()*60);
-        } else {
-          sx = x1;
-          sy = y0 + Math.random()*(y1-y0);
-          ex = sx - (10 + Math.random()*18);
-          ey = sy + (Math.random()*2-1)*(40 + Math.random()*60);
-        }
-
-        const pts = makeBolt(sx, sy, ex, ey, 10 + Math.floor(Math.random()*6), 10 + Math.random()*10);
-        const branches = [];
-        const b1 = branchFrom(pts, 0.55);
-        if (b1) branches.push(b1);
-
-        bolts.push({
-          pts,
-          branches,
-          born: performance.now(),
-          life: 220 + Math.random()*260,
-          w: 1.0 + Math.random()*1.0
-        });
+      const x = rect.left - pad;
+      const y = rect.top - pad;
+      const w = rect.width + pad*2;
+      const h = rect.height + pad*2;
+      // choose a random edge segment
+      const edge = ["top","right","bottom","left"][Math.floor(Math.random()*4)];
+      const points = [];
+      const steps = 10 + Math.floor(Math.random()*10);
+      for(let i=0;i<=steps;i++){
+        const t = i/steps;
+        if(edge==="top")    points.push({x:x + t*w, y:y + jitter(2)});
+        if(edge==="bottom") points.push({x:x + t*w, y:y + h + jitter(2)});
+        if(edge==="left")   points.push({x:x + jitter(2), y:y + t*h});
+        if(edge==="right")  points.push({x:x + w + jitter(2), y:y + t*h});
       }
+      drawBolt(ctx, points, intensity);
     }
 
-    function spawnBorderBolt(targetEl, edge="random"){
-      const r = rectOf(targetEl);
-      const inset = 2;
-      const pick = edge === "random" ? ["top","right","bottom","left"][Math.floor(Math.random()*4)] : edge;
-
-      let x0,y0,x1,y1;
-      if (pick === "top"){
-        x0 = r.x + inset + Math.random()*(r.w - inset*2);
-        y0 = r.y + inset;
-        x1 = r.x + inset + Math.random()*(r.w - inset*2);
-        y1 = r.y + inset;
-      } else if (pick === "bottom"){
-        x0 = r.x + inset + Math.random()*(r.w - inset*2);
-        y0 = r.y + r.h - inset;
-        x1 = r.x + inset + Math.random()*(r.w - inset*2);
-        y1 = r.y + r.h - inset;
-      } else if (pick === "left"){
-        x0 = r.x + inset;
-        y0 = r.y + inset + Math.random()*(r.h - inset*2);
-        x1 = r.x + inset;
-        y1 = r.y + inset + Math.random()*(r.h - inset*2);
-      } else {
-        x0 = r.x + r.w - inset;
-        y0 = r.y + inset + Math.random()*(r.h - inset*2);
-        x1 = r.x + r.w - inset;
-        y1 = r.y + inset + Math.random()*(r.h - inset*2);
+    function crackleEdge(ctx, rect, which="bottom"){
+      const pad = 0;
+      const x = rect.left - pad;
+      const y = rect.top - pad;
+      const w = rect.width + pad*2;
+      const h = rect.height + pad*2;
+      const steps = 14 + Math.floor(Math.random()*10);
+      const points = [];
+      for(let i=0;i<=steps;i++){
+        const t = i/steps;
+        if(which==="bottom") points.push({x:x + t*w, y:y + h + jitter(3)});
+        if(which==="top")    points.push({x:x + t*w, y:y + jitter(3)});
       }
-
-      // travel along edge
-      if (pick === "top" || pick === "bottom"){
-        x1 = x0 + (Math.random() > 0.5 ? 1 : -1) * (60 + Math.random()*180);
-        x1 = clamp(x1, r.x + inset, r.x + r.w - inset);
-      } else {
-        y1 = y0 + (Math.random() > 0.5 ? 1 : -1) * (60 + Math.random()*180);
-        y1 = clamp(y1, r.y + inset, r.y + r.h - inset);
-      }
-
-      const pts = makeBolt(x0,y0,x1,y1, 14, 14);
-      const branches = [];
-      const b1 = branchFrom(pts, 0.55);
-      const b2 = branchFrom(pts, 0.35);
-      if (b1) branches.push(b1);
-      if (b2) branches.push(b2);
-
-      bolts.push({
-        pts,
-        branches,
-        born: performance.now(),
-        life: 280 + Math.random()*520,
-        w: 1.2 + Math.random()*1.4
-      });
+      drawBolt(ctx, points, 2.2);
     }
 
-    function spawnRingArc(){
-      // occasional arc near ring circumference
-      const ringRect = rectOf(document.getElementById("ring"));
-      const cx = ringRect.x + ringRect.w/2;
-      const cy = ringRect.y + ringRect.h/2;
-      const rad = ringRect.w/2 - 18;
-      const a0 = Math.random() * Math.PI * 2;
-      const a1 = a0 + (Math.random() > 0.5 ? 1 : -1) * (0.7 + Math.random()*1.0);
-      const x0 = cx + Math.cos(a0)*rad;
-      const y0 = cy + Math.sin(a0)*rad;
-      const x1 = cx + Math.cos(a1)*rad;
-      const y1 = cy + Math.sin(a1)*rad;
+    function drawBolt(ctx, pts, intensity){
+      ctx.save();
+      ctx.lineWidth = 1.2;
+      ctx.globalCompositeOperation = "screen";
 
-      const pts = makeBolt(x0,y0,x1,y1, 18, 18);
-      bolts.push({
-        pts,
-        branches: [],
-        born: performance.now(),
-        life: 240 + Math.random()*380,
-        w: 1.2 + Math.random()*1.2
-      });
+      // glow layer
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(123,231,255,${0.25*intensity})`;
+      ctx.lineWidth = 3.2;
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for(let i=1;i<pts.length;i++){
+        ctx.lineTo(pts[i].x + jitter(2), pts[i].y + jitter(2));
+      }
+      ctx.stroke();
+
+      // core
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(45,125,255,${0.35*intensity})`;
+      ctx.lineWidth = 1.4;
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for(let i=1;i<pts.length;i++){
+        ctx.lineTo(pts[i].x + jitter(1.5), pts[i].y + jitter(1.5));
+      }
+      ctx.stroke();
+
+      ctx.restore();
     }
 
-    function drawBoltPath(pts, alpha, width){
-      fx.beginPath();
-      fx.moveTo(pts[0].x, pts[0].y);
-      for (let i=1;i<pts.length;i++){
-        fx.lineTo(pts[i].x, pts[i].y);
-      }
-
-      // glow underlay
-      fx.globalAlpha = alpha * 0.65;
-      fx.lineWidth = width * 5.0;
-      fx.strokeStyle = "rgba(45,125,255,1)";
-      fx.shadowBlur = 20;
-      fx.shadowColor = "rgba(45,125,255,0.8)";
-      fx.stroke();
-
-      // bright core
-      fx.globalAlpha = alpha;
-      fx.lineWidth = width;
-      fx.strokeStyle = "rgba(123,231,255,1)";
-      fx.shadowBlur = 0;
-      fx.stroke();
+    function jitter(px){
+      return (Math.random()*2 - 1) * px;
     }
 
-    function stepLightning(){
-      fx.clearRect(0,0,fxW,fxH);
-      const now = performance.now();
-
-      for (let i=bolts.length-1;i>=0;i--){
-        const b = bolts[i];
-        const age = now - b.born;
-        const t = age / b.life;
-        if (t >= 1){
-          bolts.splice(i,1);
-          continue;
-        }
-        // quick flash curve
-        const alpha = (t < 0.15) ? (t/0.15) : (t < 0.55 ? 1 : (1 - (t-0.55)/0.45));
-        drawBoltPath(b.pts, alpha, b.w);
-
-        for (const br of b.branches){
-          drawBoltPath(br, alpha * 0.8, Math.max(0.9, b.w*0.85));
-        }
-      }
-
-      requestAnimationFrame(stepLightning);
-    }
-    stepLightning();
-
-    // periodic scheduling (random-ish, unobtrusive)
-    const bayEl = document.getElementById("bay");
-    const cockpitEl = document.getElementById("cockpit");
-    const topbarEl = document.querySelector(".topbar");
-
-    function scheduleSparks(){
-      // fire a small cluster sometimes
-      const burst = Math.random() < 0.65;
-      const targets = [bayEl, cockpitEl, topbarEl];
-
-      // 1–3 bolts
-      const count = burst ? (1 + Math.floor(Math.random()*3)) : 1;
-      for (let i=0;i<count;i++){
-        const t = targets[Math.floor(Math.random()*targets.length)];
-        spawnBorderBolt(t, "random");
-      }
-
-      // occasional ring arc
-      if (Math.random() < 0.35){
-        spawnRingArc();
-      }
-
-      // next interval: 1.2s–5.0s
-      const next = 1200 + Math.random()*3800;
-      setTimeout(scheduleSparks, next);
-    }
-    // start after a short warmup
-    setTimeout(scheduleSparks, 900);
+    // Pause animations when not visible
+    document.addEventListener("visibilitychange", () => {
+      fxRunning = !document.hidden;
+    });
 
     /************************************************************
-     * Keyboard: ESC closes modal
+     * BOOT
      ************************************************************/
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && overlay.style.display === "flex"){
-        overlay.style.display = "none";
-      }
-    });
+    function tickClock(){
+      const d = new Date();
+      pillTime.textContent = d.toLocaleTimeString(undefined, { hour:"2-digit", minute:"2-digit" });
+      pillDow.textContent = fmtDow(d);
+      renderCenterScheduleAndTimers();
+    }
+
+    function boot(){
+      hydrateSetupUI();
+      ensureDay(state.viewDate);
+      viewDateEl.value = state.viewDate;
+      hydrateDrawerUI();
+
+      editLinksBtn.textContent = state.editLinks ? "Done Editing" : "Edit Links";
+
+      renderRing();
+      renderChecklist();
+      renderWeekTasks();
+      renderCenterScheduleAndTimers();
+
+      // clock tick
+      tickClock();
+      setInterval(tickClock, 1000);
+
+      // fx
+      resizeFx();
+      window.addEventListener("resize", resizeFx);
+      requestAnimationFrame(drawFx);
+    }
+
+    boot();
   </script>
 </body>
 </html>
